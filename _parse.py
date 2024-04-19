@@ -6,19 +6,19 @@ from _error import *
 import re
 import io
 
-# Ch 9
+# Ph 9
 #       lex: 문자 ' 처리
 #       read_expr: tok이 '인 경우 추가(quote 노드 추가)
 #                  car(cdr(qlst))를 재설정하는 것에서 버그가 있었음
 
-# Ch 12. Library
+# Ph 12. Library
 #       read_simple(str): "-1"이나 "+3"도 인식하도록 수정함
 
-# Ch 13. Quasiquotation
+# Ph 13. Quasiquotation
 #       lex: ","와 ",@", "`"를 인식하도록 수정함
 #       read_expr: "`"를 quasiquote로, ","를 unquote로, ",@"를 unquote-splicing으로 바꾸도록 수정함 
 
-# Ch 14. Multiline 처리
+# Ph 14. Multiline 처리
 #       클래스: Reader
 #       전역 변수: YY_reader 추가
 #       전역 함수: match 추가, lex -> next_token으로 변경

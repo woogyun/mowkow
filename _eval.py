@@ -4,33 +4,33 @@ from _data import *
 from _parse import *
 from _error import *
 
-# Ch 8
+# Ph 8
 #       global isternary(Data): 인수 개수가 3개인지 검사
 #       eval의 fun.issymbol() 블록에 "if" 처리 추가
 #       main의 envset(env, mksym("#t"), mksym("#t")) 추가
 #       내장 함수 builtin_inteq, builtin_intlt 추가
 #       main에서 envset에서 (= . builtin_inteq), (< . builtin_intlt) 추가
 
-# Ch 9
+# Ph 9
 #       eval: define 키워드 처리 시 sym이 pair인 경우(sym.ispair()) 처리 추가
 #             이로 인해서 sym이 symbol인 경우의 코드를 재구성함
 #             인수가 없는 람다도 가능한가? -> 가능함(테스트 세션 3 참고)
 
-# Ch 10. Variadic
+# Ph 10. Variadic
 #       apply: parameter가 이름(symbol)인 경우 나머지 인수에 바인딩하는 코드 추가
 
-# Ch 11. Macro
+# Ph 11. Macro
 #       eval: defmacro 섹션 추가
 
-# Ch 12. Library
+# Ph 12. Library
 #       builtin_apply(Data)
 #       builtin_eq(Data)
 #       builtin_ispair(Data)
 
 
 # 내장 함수
-#       car, cdr, cons, 
-#       add(+), sub(-), mul(*), div(*)/), 
+#       car, cdr, cons,
+#       add(+), sub(-), mul(*), div(/),
 #       inteq(=), intlt(<)
 
 def builtin_car(args: Data) -> Data:
@@ -58,52 +58,52 @@ def builtin_cons(args: Data) -> Data:
 
 def builtin_add(args: Data) -> Data:
     if not isbinary(args):
-        raise ErrArgs("<builtin +>")
+        raise ErrArgs("<내장함수 '+'>")
     a = car(args)
     b = car(cdr(args))
     if not a.isint() or not b.isint():
-        raise ErrType("<builtin +>")
+        raise ErrType("<내장함수 '+'>")
     return mkint(a.value() + b.value())
 
 def builtin_sub(args: Data) -> Data:
     if not isbinary(args):
-        raise ErrArgs("<builtin ->")
+        raise ErrArgs("<내장함수 '-'>")
     a = car(args)
     b = car(cdr(args))
     if not a.isint() or not b.isint():
-        raise ErrType("<builtin ->")
+        raise ErrType("<내장함수 '-'>")
     return mkint(a.value() - b.value())
 
 def builtin_mul(args: Data) -> Data:
     if not isbinary(args):
-        raise ErrArgs("<builtin *>")
+        raise ErrArgs("<내장함수 '*'>")
     a = car(args)
     b = car(cdr(args))
     if not a.isint() or not b.isint():
-        raise ErrType("<builtin *>")
+        raise ErrType("<내장함수 '*'>")
     return mkint(a.value() * b.value())
 
 def builtin_div(args: Data) -> Data:
     if not isbinary(args):
-        raise ErrArgs("<builtin />")
+        raise ErrArgs("<내장함수 '/'>")
     a = car(args)
     b = car(cdr(args))
     if not a.isint() or not b.isint():
-        raise ErrType("<builtin />")
+        raise ErrType("<내장함수 '/'>")
     return mkint(a.value() // b.value())
 
 def builtin_inteq(args: Data) -> Data:
     if not isbinary(args):
-        raise ErrArgs("<builtin =>")
+        raise ErrArgs("<내장함수 '='>")
     a = car(args)
     b = car(cdr(args))
     if not a.isint() or not b.isint():
-        raise ErrType("<builtin =>")
+        raise ErrType("<내장함수 '='>")
     return mksym("#참") if a.value() == b.value() else nil
 
 def builtin_intlt(args: Data) -> Data:
     if not isbinary(args):
-        raise ErrArgs("<builtin <>")
+        raise ErrArgs("<내장함수 '<'>")
     a = car(args)
     b = car(cdr(args))
     if not a.isint() or not b.isint():
@@ -149,7 +149,7 @@ def builtin_ispair(args: Data) -> Data:
 
 def builtin_and(args: Data) -> Data:
     if not isbinary(args):
-        raise ErrArgs("<builtin 그리고")
+        raise ErrArgs("<내장함수 '그리고'")
     a = car(args)
     b = car(cdr(args))
     if a.issymbol() and a.value() == "#참":
@@ -157,7 +157,7 @@ def builtin_and(args: Data) -> Data:
     elif a.isnil():
         return nil
     else:
-        raise ErrType("<builtin 그리고>")
+        raise ErrType("<내장함수 '그리고'>")
 
 def builtin_read(args: Data) -> Data:
     fname = "입력"
@@ -316,7 +316,7 @@ def apply(fn: Data, args: Data) -> Data:
     if fn.isbuiltin():
         return fn.fun()(args)
     if not fn.isclosure():
-        raise ErrType("<#closure>")
+        raise ErrType("<#클로저>")
     env = mkenv(fn.env())       # bug_230104b: mkenv(car(fn)) -> mkenv(fn.env())
     params = fn.params()        # bug_230104c: car(cdr(fn))   -> fn.params()
     body = fn.body()            # bug_230104d: cdr(cdr(fn))   -> fn.body()
@@ -340,8 +340,8 @@ def apply(fn: Data, args: Data) -> Data:
 def main():
     env = mkenv(nil)
 
-    envset(env, mksym("좌"), mkbuiltin(builtin_car))
-    envset(env, mksym("우"), mkbuiltin(builtin_cdr))
+    envset(env, mksym("머"), mkbuiltin(builtin_car))
+    envset(env, mksym("꼬"), mkbuiltin(builtin_cdr))
     envset(env, mksym("짝"), mkbuiltin(builtin_cons))
     envset(env, mksym("+"), mkbuiltin(builtin_add))
     envset(env, mksym("-"), mkbuiltin(builtin_sub))
@@ -365,7 +365,15 @@ def main():
 if __name__ == "__main__":
     main()
 
-""" TEST Session for Ch 12
+"""
+키워드: 정의(define), 람다(lambda), 만약(if), 인용(quote), 매크로(macro),
+        특이인용(`), 비인용(,), 비인용연결(,@)
+        # 비인용해제(unquote-splicing)
+내장함수: 좌(car), 우(cdr), 짝(cons), +, -, *, /, =, <, 입력(read), 출력(write)
+내장 리터럴: 공(nil), #참(t)
+"""
+
+"""TEST Session for Ch 12
 > (defmacro (ignore x) (cons 'quote (cons x nil)))
 ignore
 > (ignore foo)

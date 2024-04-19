@@ -1,6 +1,6 @@
 #coding: utf-8
 
-# ch 4(eval): Pair.car() and Pair.cdr()
+# Ph 4(eval): Pair.car() and Pair.cdr()
 #             global car(Data) and cdr(Data)
 #             Symbol.value(self)
 #             global islist(Data): recursive
@@ -9,20 +9,20 @@
 # bug: Pair의 함수 이름과 필드 이름을 똑같이 car, cdr로 설정했었음.
 #      -> 필드를 _car, _cdr로 바꿈
 
-# ch 5(car):    class Builtin
+# Ph 5(car):    class Builtin
 #               global mkbuiltin, cplist
 #               Pair.setcar(Data)
 #               Integer.value()
 
-# ch 7(clo):    class Closure
+# Ph 7(clo):    class Closure
 #               Data.isclosure()
 #               global allsymbols(Data)
 #               from _error import *
 
-# ch 10(var):   Closure.__init__ does not use allsymbols
+# Ph 10(var):   Closure.__init__ does not use allsymbols
 #               but checks the parameter types manually
 
-# ch 11(macro): Macro(Data) class is a copycat of Closure(Data)
+# Ph 11(macro): Macro(Data) class is a copycat of Closure(Data)
 #               Macro.isclosure()를 Macro.ismacro()로 대체
 #               Data.ismacro() 추가
 #               Macro 생성자를 호출하는 전역 함수 mkmacro 추가

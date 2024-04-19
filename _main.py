@@ -1,6 +1,6 @@
 #coding: utf-8
 
-# Ch. 14: Multiline
+# Ph. 14: Multiline
 #       YY_reader, YY_input 설정
 #       read_expr 호출 전에 next_token으로 LA를 먼저 설정
 
@@ -27,8 +27,8 @@ def main():
 
     env = mkenv(nil)
 
-    envset(env, mksym("좌"), mkbuiltin(builtin_car))
-    envset(env, mksym("우"), mkbuiltin(builtin_cdr))
+    envset(env, mksym("머"), mkbuiltin(builtin_car))
+    envset(env, mksym("꼬"), mkbuiltin(builtin_cdr))
     envset(env, mksym("짝"), mkbuiltin(builtin_cons))
     envset(env, mksym("+"), mkbuiltin(builtin_add))
     envset(env, mksym("-"), mkbuiltin(builtin_sub))
@@ -58,10 +58,18 @@ def main():
         except ErrLisp as err:
             print(f"오류: {err}")
         # except RunOutOfInput:
-        #     print(f"Thank you for using LISP")
+        #     print(f"'머꼬' 사용에 감사드립니다.")
 
 if __name__ == "__main__":
     main()
+
+"""
+키워드: 정의(define), 람다(lambda), 만약(if), 인용(quote), 매크로(macro),
+        특이인용(`), 비인용(,), 비인용연결(,@)
+        # 비인용해제(unquote-splicing)
+내장함수: 머(car), 꼬(cdr), 짝(cons), +, -, *, /, =, <, 입력(read), 출력(write)
+내장 리터럴: 공(nil), #참(t)
+"""
 
 """ TEST Session for Ch 13
 Reading library.lisp...
