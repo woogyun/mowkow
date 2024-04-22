@@ -77,11 +77,19 @@ class Reader:
     def LA(self) -> str:
         return self._LA
     def read(self) -> str:
-        self._input = input(self._prompt1)
-        return self._input
+        try:
+            self._input = input(self._prompt1)
+        except EOFError:
+            return ""
+        else:
+            return self._input
     def read2(self) -> str:
-        self._input = input(self._prompt2)
-        return self._input
+        try:
+            self._input = input(self._prompt2)
+        except EOFError:
+            return ""
+        else:
+            return self._input
     def readfile(self, fname) -> str:
         self._input = slurp(fname)
     def nestin(self) -> None:
@@ -178,7 +186,7 @@ def read_list() -> Data:
     YY_reader.next_token()
     return lst
 
-def main():
+def main_p():
     while (s := YY_reader.read()) != "":
         try:
             tok = YY_reader.next_token()
@@ -188,4 +196,4 @@ def main():
             print("Syntax Error")
 
 if __name__ == "__main__":
-    main()
+    main_p()

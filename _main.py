@@ -40,6 +40,8 @@ def main():
     envset(env, mksym("적용"), mkbuiltin(builtin_apply))
     envset(env, mksym("같다?"), mkbuiltin(builtin_eq))
     envset(env, mksym("짝?"), mkbuiltin(builtin_ispair))
+    envset(env, mksym("공?"), mkbuiltin(builtin_isnil))
+    envset(env, mksym("부정"), mkbuiltin(builtin_not))
     envset(env, mksym("그리고"), mkbuiltin(builtin_and))
     envset(env, mksym("입력"), mkbuiltin(builtin_read))
     envset(env, mksym("출력"), mkbuiltin(builtin_write))
@@ -57,6 +59,9 @@ def main():
             # print(f"AFTER:  {YY_reader.remains()}")
         except ErrLisp as err:
             print(f"오류: {err}")
+        except EOFError:
+            print(f"'머꼬' 사용에 감사드립니다.")
+            break
         # except RunOutOfInput:
         #     print(f"'머꼬' 사용에 감사드립니다.")
 
@@ -67,7 +72,11 @@ if __name__ == "__main__":
 키워드: 정의(define), 람다(lambda), 만약(if), 인용(quote), 매크로(macro),
         특이인용(`), 비인용(,), 비인용연결(,@)
         # 비인용해제(unquote-splicing)
-내장함수: 머(car), 꼬(cdr), 짝(cons), +, -, *, /, =, <, 입력(read), 출력(write)
+내장함수:   
+    머(car), 꼬(cdr), 짝(cons), 
+    +, -, *, /, 
+    =, <, 적용(apply), 같다?(eq), 짝?(pair?), 공?(nil?), 그리고(and),
+    입력(read), 출력(write)
 내장 리터럴: 공(nil), #참(t)
 """
 

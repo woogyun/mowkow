@@ -35,20 +35,20 @@ from _error import *
 
 def builtin_car(args: Data) -> Data:
     if not isunary(args):
-        raise ErrArgs("좌")
+        raise ErrArgs("머")
     if car(args).isnil():
         return nil              # 본래는 오류여야 함
     if not car(args).ispair():
-        raise ErrType("좌")
+        raise ErrType("머")
     return car(car(args))
 
 def builtin_cdr(args: Data) -> Data:
     if not isunary(args):
-        raise ErrArgs("우")
+        raise ErrArgs("꼬")
     if car(args).isnil():
         return nil              # 본래는 오류여야 함
     if not car(args).ispair():
-        raise ErrType("우")
+        raise ErrType("꼬")
     return cdr(car(args))
 
 def builtin_cons(args: Data) -> Data:
@@ -144,12 +144,22 @@ def builtin_eq(args: Data) -> Data:
 
 def builtin_ispair(args: Data) -> Data:
     if not isunary(args):
-        raise ErrArgs("짝?")
+        raise ErrArgs("<내장함수 '짝?'>")
     return mksym("#참") if car(args).ispair() else nil
+
+def builtin_isnil(args: Data) -> Data:
+    if not isunary(args):
+        raise ErrArgs("<내장함수 '공?'>")
+    return mksym("#참") if car(args).isnil() else nil
+
+def builtin_not(args: Data) -> Data:
+    if not isunary(args):
+        raise ErrArgs("<내장함수 '부정'>")
+    return mksym("#참") if car(args).isnil() else nil
 
 def builtin_and(args: Data) -> Data:
     if not isbinary(args):
-        raise ErrArgs("<내장함수 '그리고'")
+        raise ErrArgs("<내장함수 '그리고'>")
     a = car(args)
     b = car(cdr(args))
     if a.issymbol() and a.value() == "#참":
@@ -337,7 +347,7 @@ def apply(fn: Data, args: Data) -> Data:
         body = cdr(body)
     return result
 
-def main():
+def main_e():
     env = mkenv(nil)
 
     envset(env, mksym("머"), mkbuiltin(builtin_car))
@@ -348,8 +358,10 @@ def main():
     envset(env, mksym("*"), mkbuiltin(builtin_mul))
     envset(env, mksym("/"), mkbuiltin(builtin_div))
     envset(env, mksym("#참"), mksym("#참"))
+    envset(env, mksym("짝?"), mkbuiltin(builtin_ispair))
     envset(env, mksym("="), mkbuiltin(builtin_inteq))
     envset(env, mksym("<"), mkbuiltin(builtin_intlt))
+    envset(env, mksym("부정"), mkbuiltin(builtin_not))
     envset(env, mksym("입력"), mkbuiltin(builtin_read))
     envset(env, mksym("출력"), mkbuiltin(builtin_write))
 
@@ -363,13 +375,16 @@ def main():
             print(f"Error: {err}")
 
 if __name__ == "__main__":
-    main()
+    main_e()
 
 """
-키워드: 정의(define), 람다(lambda), 만약(if), 인용(quote), 매크로(macro),
-        특이인용(`), 비인용(,), 비인용연결(,@)
-        # 비인용해제(unquote-splicing)
-내장함수: 좌(car), 우(cdr), 짝(cons), +, -, *, /, =, <, 입력(read), 출력(write)
+키워드:     정의(define), 람다(lambda), 만약(if), 인용(quote), 매크로(macro),
+            특이인용(`), 비인용(,), 비인용연결(,@)
+            # 비인용해제(unquote-splicing)
+내장함수:   머(car), 꼬(cdr), 짝(cons), 
+            +, -, *, /, 
+            짝?(pair?), 공?(nil?), =, <, 부정(not), 
+            입력(read), 출력(write)
 내장 리터럴: 공(nil), #참(t)
 """
 
