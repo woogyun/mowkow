@@ -17,16 +17,16 @@ class ErrUnbound(ErrLisp):
     def __init__(self, sym: str):
         self.symname = sym
     def __str__(self:ErrLisp) -> str:
-        return f"'{self.symname}'를 찾을 수 없습니다."
+        return f"이름 '{self.symname}'을(를) 찾을 수 없습니다."
 
 class ErrArgs(ErrLisp):
     def __init__(self, fun: str):
         self.funname = fun
     def __str__(self:ErrLisp) -> str:
-        return f"'{self.funname}'의 인수 개수 오류입니다."
+        return f"함수 {self.funname}: 인수 개수 오류입니다."
 
 class ErrType(ErrLisp):
     def __init__(self, fun: str):
         self.funname = fun
     def __str__(self:ErrLisp) -> str:
-        return f"'{self.funname}'의 타입 오류입니다."
+        return f"함수 {self.funname}: 타입 오류입니다."
