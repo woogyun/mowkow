@@ -11,16 +11,16 @@ from _eval import *
 
 def load_file(env: Data, path: str) -> None:
     global YY_reader
-    print(f"Reading {path}...")
+    eprint(f"'{path}'을(를) 불러오는 중입니다...")
     YY_reader.readfile(path)
     tok = YY_reader.next_token()
     while YY_reader.remains() != "":
         try:
             expr = read_expr()
             result = eval(expr, env)
-            print(result)
+            eprint(result)
         except ErrLisp as err:
-            print(f"ERROR: {err}")
+            eprint(f"오류: {err}")
 
 def main():
     global YY_reader
@@ -43,8 +43,10 @@ def main():
     envset(env, mksym("공?"), mkbuiltin(builtin_isnil))
     envset(env, mksym("부정"), mkbuiltin(builtin_not))
     envset(env, mksym("그리고"), mkbuiltin(builtin_and))
+    envset(env, mksym("또는"), mkbuiltin(builtin_or))
     envset(env, mksym("입력"), mkbuiltin(builtin_read))
     envset(env, mksym("출력"), mkbuiltin(builtin_write))
+    envset(env, mksym("_모"), mkbuiltin(builtin_gensym))
 
     load_file(env, "library_kor.scm")
 
@@ -58,9 +60,9 @@ def main():
             print(val)
             # print(f"AFTER:  {YY_reader.remains()}")
         except ErrLisp as err:
-            print(f"오류: {err}")
+            eprint(f"오류: {err}")
         except EOFError:
-            print(f"'머꼬' 사용에 감사드립니다.")
+            eprint(f"'머꼬' 사용에 감사드립니다.")
             break
         # except RunOutOfInput:
         #     print(f"'머꼬' 사용에 감사드립니다.")
@@ -70,7 +72,7 @@ if __name__ == "__main__":
 
 """
 키워드: 정의(define), 람다(lambda), 만약(if), 인용(quote), 매크로(macro),
-        특이인용(`), 비인용(,), 비인용연결(,@)
+        특이인용(`), 비인용(,), 비인용연결(,@), _모(gensym),
         # 비인용해제(unquote-splicing)
 내장함수:   
     머(car), 꼬(cdr), 짝(cons), 
@@ -80,7 +82,7 @@ if __name__ == "__main__":
 내장 리터럴: 공(nil), #참(t)
 """
 
-""" TEST Session for Ch 13
+""" TEST Session for Ph 13
 Reading library.lisp...
 abs
 foldl
@@ -115,5 +117,35 @@ Error: Symbol not bound for 'x'
 +
 > (+ 1 2 3 4)
 10
+>
+"""
+
+""" 키워드 _모, 라이브러리 새함수 추가 후 테스트
+\dev\mowkow>python _main.py
+'library_kor.scm'을(를) 불러오는 중입니다...
+머리
+꼬리
+머머
+꼬머
+그대로
+아톰?
+리스트?
+절댓값
+머리돌기
+꼬리돌기
+리스트
+거꾸로
+한맵
+맵
+접합
+특이인용
+임시
+새함수
+>  (새함수 (+ 2 3))
+#기호2000
+>  (#기호2000 1)
+5
+>  (#기호2000 100)
+5
 >
 """

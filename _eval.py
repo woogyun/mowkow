@@ -33,6 +33,19 @@ from _error import *
 #       add(+), sub(-), mul(*), div(/),
 #       inteq(=), intlt(<)
 
+_gensym_counter: int = 2000
+
+def builtin_gensym(args: Data) -> Data:
+    '''새 기호를 만들어서 반환한다. 인수는 없어야 한다.'''
+    fname = "_모"       # 새 기호를 만들어서 반환(_새글)
+    if not isvoid(args):
+        raise ErrArgs(f"<내장함수 '{fname}'>")
+    global _gensym_counter
+    name = "#기호" + str(_gensym_counter)
+    _gensym_counter += 1
+    return mksym(name)
+
+
 def builtin_car(args: Data) -> Data:
     if not isunary(args):
         raise ErrArgs("머")
@@ -116,7 +129,7 @@ def builtin_apply(args: Data) -> Data:
     fn = car(args)
     args = car(cdr(args))
     if not islist(args):
-        raise ErrSyntax("적용")
+        raise ErrSyntax()
     return apply(fn, args)
 
 def builtin_eq(args: Data) -> Data:
@@ -158,8 +171,9 @@ def builtin_not(args: Data) -> Data:
     return mksym("#참") if car(args).isnil() else nil
 
 def builtin_and(args: Data) -> Data:
+    fname = "그리고"
     if not isbinary(args):
-        raise ErrArgs("<내장함수 '그리고'>")
+        raise ErrArgs("<내장함수 '{fname}'>")
     a = car(args)
     b = car(cdr(args))
     if a.issymbol() and a.value() == "#참":
@@ -167,7 +181,22 @@ def builtin_and(args: Data) -> Data:
     elif a.isnil():
         return nil
     else:
-        raise ErrType("<내장함수 '그리고'>")
+        raise ErrType("<내장함수 '{fname}'>")
+
+def builtin_or(args: Data) -> Data:
+    fname = "또는"      # 혹
+    if not isbinary(args):
+        raise ErrArgs("<내장함수 '{fname}'>")
+    a = car(args)
+    b = car(cdr(args))
+    if a.isnil():
+        return b
+    else:
+        return a
+    # elif a.issymbol() and a.value() == "#참":
+    #     return a
+    # else:
+    #     raise ErrType("<내장함수 '{fname}'>")
 
 def builtin_read(args: Data) -> Data:
     fname = "입력"
@@ -278,7 +307,7 @@ def eval(expr: Data, env: Data) -> Data:
             if not isbinary(args):
                 raise ErrArgs("매크로")
             if not car(args).ispair():
-                raise ErrSyntax("매크로")
+                raise ErrSyntax()
             name = car(car(args))
             if not name.issymbol():
                 raise ErrType("매크로")
@@ -336,12 +365,12 @@ def apply(fn: Data, args: Data) -> Data:
             args = nil
             break
         if args.isnil():        # for normal parameters
-            raise ErrArgs()
+            raise ErrArgs("<#클로저>")
         envset(env, car(params), car(args))
         params = cdr(params)
         args = cdr(args)
     if not args.isnil():
-        raise ErrArgs()
+        raise ErrArgs("<#클로저>")
     while not body.isnil():     # q_230102: 왜 body를 계속 계산하나? 수식 하나 아닌가?
         result = eval(car(body), env)
         body = cdr(body)
@@ -364,15 +393,28 @@ def main_e():
     envset(env, mksym("부정"), mkbuiltin(builtin_not))
     envset(env, mksym("입력"), mkbuiltin(builtin_read))
     envset(env, mksym("출력"), mkbuiltin(builtin_write))
+    # envset(env, mksym("_새글"), mkbuiltin(builtin_gensym))
 
-    while (s := input("> ")) != "":
+    # load_file(env, "library_kor.scm")
+    global YY_reader
+    while (s := YY_reader.read()) != "":
         try:
-            expr, s = read_expr(s)
+            # print(f"BEFORE: {s}")
+            tok = YY_reader.next_token()
+            expr = read_expr()
             val = eval(expr, env)
             print(val)
-            #print(s)
+            # print(f"AFTER:  {YY_reader.remains()}")
         except ErrLisp as err:
-            print(f"Error: {err}")
+            eprint(f"오류: {err}")
+    # while (s := input("> ")) != "":
+    #     try:
+    #         expr, s = read_expr(s)
+    #         val = eval(expr, env)
+    #         print(val)
+    #         #print(s)
+    #     except ErrLisp as err:
+    #         print(f"Error: {err}")
 
 if __name__ == "__main__":
     main_e()

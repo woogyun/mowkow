@@ -1,5 +1,11 @@
 #coding: utf-8
 
+import sys
+
+def eprint(*args, **kwargs) -> None:
+    '''stderr에 출력하는 함수'''
+    print(*args, file=sys.stderr, **kwargs)
+
 # making the hierarchy of Errors
 # To do: enriching the arguments of errors
 #        translate into Korean

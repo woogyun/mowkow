@@ -10,6 +10,9 @@
 (정의 (아톰? x) 
   (그리고 (부정 (짝? x)) 
           (부정 (공? x))))
+(정의 (리스트? x)
+  (또는 (짝? x)
+        (공? x)))
 
 (정의 (절댓값 x) 
   (만약 (< x 0) 
@@ -61,7 +64,26 @@
 (매크로 (임시 defs . body) 
   `((람다 ,(맵 머 defs) ,@body) ,@(맵 꼬머 defs)))
 
-; '임시'를 이용하여 다시 써야 함
+(매크로 (새함수 body)
+  (임시 ((함수명 (_모))
+         (변수명 (_모)))
+    `(정의 ,함수명 (람다 (,변수명) (,@body)))))
+
+;(정의 let 임시)
+;(정의 mapcar 한맵)
+;(정의 gensym _모)
+
+;(매크로 (letrec (&rest bindings) &body body)
+;  (let ((temp (gensym)))
+;    `(let (,@(mapcar (lambda (binding)
+;                       (if (listp binding)
+;                           `(,temp (labels ((,(머 binding) ,@(꼬 binding))))
+;                              (setf ,(머 binding) (funcall ,temp)))
+;                           `(,binding)))
+;                     bindings))
+;       ,@body)))
+
+; '임시rec'를 이용하여 다시 써야 함
 ;(매크로 (조건 . 절)
 ;  (정의 (cond-clauses->if lst)
 ;    (만약 (아톰? lst)
