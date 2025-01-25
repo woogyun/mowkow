@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
 """
 키워드: 정의(define), 람다(lambda), 만약(if), 인용(quote), 매크로(macro),
-        특이인용(`), 비인용(,), 비인용연결(,@), _모(gensym),
+        특이인용(`), 비인용(,), 비인용연결(,@), _모(gensym), 조건(cond), 잠시(let*)
         # 비인용해제(unquote-splicing)
 내장함수:   
     머(car), 꼬(cdr), 짝(cons), 
@@ -81,6 +81,39 @@ if __name__ == "__main__":
     입력(read), 출력(write)
 내장 리터럴: 공(nil), #참(t)
 """
+
+
+""" TEST Session for Ph 15
+D:\dev\mowkow>python _main.py
+'library_kor.scm'을(를) 불러오는 중입니다...
+머리
+꼬리
+머머
+꼬머
+그대로
+아톰?
+리스트?
+절댓값
+머리돌기
+꼬리돌기
+리스트
+거꾸로
+한맵
+맵
+접합
+특이인용
+임시
+>  (조건 (#참 3))
+3
+>  (조건 ((< 3 2) 3) (#참 5))
+5
+>  (잠시
+..   ((x 2)
+..    (y (+ 1 x)))
+..   (+ x y))
+5
+"""
+
 
 """ TEST Session for Ph 13
 Reading library.lisp...
@@ -120,7 +153,7 @@ Error: Symbol not bound for 'x'
 >
 """
 
-""" 키워드 _모, 라이브러리 새함수 추가 후 테스트
+""" 내장 함수 _모, 라이브러리 새함수 추가 후 테스트
 \dev\mowkow>python _main.py
 'library_kor.scm'을(를) 불러오는 중입니다...
 머리

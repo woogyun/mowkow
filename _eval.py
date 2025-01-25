@@ -27,26 +27,28 @@ from _error import *
 #       builtin_eq(Data)
 #       builtin_ispair(Data)
 
+# Ph 15. 조건(cond) 및 잠시(let*) 처리
+#       eval: 조건(cond) 및 잠시(let*) 처리 추가
+#             조건(cond)은 조건이 참인 경우에만 계산하고 하나도 참이 아니면 nil을 반환함
+#             잠시(let*)은 바인딩을 순차적으로 처리함(let은 병렬 처리임에 반해 let*은 순차 처리임)
 
 # 내장 함수
 #       car, cdr, cons,
 #       add(+), sub(-), mul(*), div(/),
 #       inteq(=), intlt(<)
 
-_gensym_counter: int = 2000
 
-def builtin_gensym(args: Data) -> Data:
+def builtin_gensym(args: Data, _gensym_counter: int=20000) -> Data:
     '''새 기호를 만들어서 반환한다. 인수는 없어야 한다.'''
     fname = "_모"       # 새 기호를 만들어서 반환(_새글)
     if not isvoid(args):
         raise ErrArgs(f"<내장함수 '{fname}'>")
-    global _gensym_counter
     name = "#기호" + str(_gensym_counter)
     _gensym_counter += 1
     return mksym(name)
 
-
 def builtin_car(args: Data) -> Data:
+    '''머리 함수: (car (a b)) -> a'''
     if not isunary(args):
         raise ErrArgs("머")
     if car(args).isnil():
@@ -56,6 +58,7 @@ def builtin_car(args: Data) -> Data:
     return car(car(args))
 
 def builtin_cdr(args: Data) -> Data:
+    '''꼬리 함수: (cdr (a b)) -> b'''
     if not isunary(args):
         raise ErrArgs("꼬")
     if car(args).isnil():
@@ -65,11 +68,13 @@ def builtin_cdr(args: Data) -> Data:
     return cdr(car(args))
 
 def builtin_cons(args: Data) -> Data:
+    '''짝 함수: (cons a b) -> (a . b)'''
     if not isbinary(args):
         raise ErrArgs("짝")
     return cons(car(args), car(cdr(args)))
 
 def builtin_add(args: Data) -> Data:
+    '''덧셈 함수: (+ 1 2) -> 3'''
     if not isbinary(args):
         raise ErrArgs("<내장함수 '+'>")
     a = car(args)
@@ -79,6 +84,7 @@ def builtin_add(args: Data) -> Data:
     return mkint(a.value() + b.value())
 
 def builtin_sub(args: Data) -> Data:
+    '''뺄셈 함수: (- 3 2) -> 1'''
     if not isbinary(args):
         raise ErrArgs("<내장함수 '-'>")
     a = car(args)
@@ -88,6 +94,7 @@ def builtin_sub(args: Data) -> Data:
     return mkint(a.value() - b.value())
 
 def builtin_mul(args: Data) -> Data:
+    '''곱셈 함수: (* 2 3) -> 6'''
     if not isbinary(args):
         raise ErrArgs("<내장함수 '*'>")
     a = car(args)
@@ -97,6 +104,7 @@ def builtin_mul(args: Data) -> Data:
     return mkint(a.value() * b.value())
 
 def builtin_div(args: Data) -> Data:
+    '''나눗셈 함수: (/ 6 3) -> 2'''
     if not isbinary(args):
         raise ErrArgs("<내장함수 '/'>")
     a = car(args)
@@ -106,6 +114,7 @@ def builtin_div(args: Data) -> Data:
     return mkint(a.value() // b.value())
 
 def builtin_inteq(args: Data) -> Data:
+    '''정수 같다 함수: (= 1 1) -> #참'''
     if not isbinary(args):
         raise ErrArgs("<내장함수 '='>")
     a = car(args)
@@ -115,6 +124,7 @@ def builtin_inteq(args: Data) -> Data:
     return mksym("#참") if a.value() == b.value() else nil
 
 def builtin_intlt(args: Data) -> Data:
+    '''정수 작다 함수: (< 1 2) -> #참'''
     if not isbinary(args):
         raise ErrArgs("<내장함수 '<'>")
     a = car(args)
@@ -124,6 +134,7 @@ def builtin_intlt(args: Data) -> Data:
     return mksym("#참") if a.value() < b.value() else nil
 
 def builtin_apply(args: Data) -> Data:
+    '''함수 적용 함수: (apply fn args) -> (fn . args)'''
     if not isbinary(args):
         raise ErrArgs("적용")
     fn = car(args)
@@ -133,6 +144,7 @@ def builtin_apply(args: Data) -> Data:
     return apply(fn, args)
 
 def builtin_eq(args: Data) -> Data:
+    '''같다? 함수: (eq a b) -> #참'''
     if not isbinary(args):
         raise ErrArgs("같다?")
     a = car(args)
@@ -156,21 +168,25 @@ def builtin_eq(args: Data) -> Data:
     return mksym("#참") if eq else nil
 
 def builtin_ispair(args: Data) -> Data:
+    '''짝? 함수: (짝? (a b)) -> #참'''
     if not isunary(args):
         raise ErrArgs("<내장함수 '짝?'>")
     return mksym("#참") if car(args).ispair() else nil
 
 def builtin_isnil(args: Data) -> Data:
+    '''공? 함수: (공? (a b)) -> #참'''
     if not isunary(args):
         raise ErrArgs("<내장함수 '공?'>")
     return mksym("#참") if car(args).isnil() else nil
 
 def builtin_not(args: Data) -> Data:
+    '''부정 함수: (부정 #참) -> 공'''       # (부정 #참) -> 공, (부정 공) -> #참 (cf. 반 for 반대)
     if not isunary(args):
         raise ErrArgs("<내장함수 '부정'>")
     return mksym("#참") if car(args).isnil() else nil
 
 def builtin_and(args: Data) -> Data:
+    '''그리고 함수: (그리고 #참 #참) -> #참'''     # (그리고 #참 #참) -> #참, (그리고 #참 공) -> 공 (cf. 다 for 모두다)
     fname = "그리고"
     if not isbinary(args):
         raise ErrArgs("<내장함수 '{fname}'>")
@@ -184,6 +200,7 @@ def builtin_and(args: Data) -> Data:
         raise ErrType("<내장함수 '{fname}'>")
 
 def builtin_or(args: Data) -> Data:
+    '''또는 함수: (또는 #참 공) -> #참'''       # (또는 #참 공) -> #참, (또는 공 공) -> 공 (cf. 또 for 혹)
     fname = "또는"      # 혹
     if not isbinary(args):
         raise ErrArgs("<내장함수 '{fname}'>")
@@ -199,6 +216,7 @@ def builtin_or(args: Data) -> Data:
     #     raise ErrType("<내장함수 '{fname}'>")
 
 def builtin_read(args: Data) -> Data:
+    '''입력 함수: (입력) -> 123'''     # (입력) -> 123 (cf. 읽기)
     fname = "입력"
     if not isvoid(args):
         raise ErrArgs(f"<내장함수 '{fname}'>")
@@ -211,6 +229,7 @@ def builtin_read(args: Data) -> Data:
         raise ErrType(f"<내장함수 '{fname}'>")
 
 def builtin_write(args: Data) -> Data:
+    '''출력 함수: (출력 123) -> 123'''     # (출력 123) -> 123 (cf. 쓰기)
     fname = "출력"
     if not isunary(args):
         raise ErrArgs(f"<내장함수 '{fname}'>")
@@ -232,22 +251,25 @@ def builtin_write(args: Data) -> Data:
 #   envset(env, symbol, value): 환경에 symbol = value를 추가한다.
 
 def mkenv(parent: Data) -> Data:
+    '''부모 환경이 parent인 환경을 만든다.'''
     env = cons(parent, nil)
     return env
 
 def envget(env: Data, symbol: Data) -> Data:
+    '''환경 env에서 이름 symbol을 찾는다. 없으면 ErrUnbound 발생'''
     parent = env.car()
     binds  = env.cdr()
     while not binds.isnil():
         bind = car(binds)
         if car(bind).value() == symbol.value():
-              return cdr(bind)
+            return cdr(bind)
         binds = cdr(binds)
     if parent.isnil():
         raise ErrUnbound(symbol.value())
     return envget(parent, symbol)        
 
 def envset(env: Data, symbol: Data, value: Data) -> None:
+    '''환경에 symbol = value를 추가한다.'''
     binds = cdr(env)
     while not binds.isnil():
         bind = car(binds)
@@ -259,20 +281,21 @@ def envset(env: Data, symbol: Data, value: Data) -> None:
     env.setcdr(cons(bind, cdr(env)))        # prepend a new entry
 
 def eval(expr: Data, env: Data) -> Data:
+    '''수식 expr을 환경 env에서 계산한다.'''
     if expr.issymbol():
         return envget(env, expr)
     if not expr.ispair():
         return expr
-    if not islist(expr):
+    if not islist(expr):    # 순차 수식은 허용하지 않음
         raise ErrSyntax()
     fun  = car(expr)
     args = cdr(expr)
-    if fun.issymbol():  # bug_230104e: keyword parts are guarded
-        if fun.value() == "인용":
+    if fun.issymbol():      # bug_230104e: keyword parts are guarded
+        if fun.value() == "인용":       # 키워드 '인용'(quote) 처리: (인용 exp)
             if not isunary(args):
                 raise ErrArgs("인용")
             return car(args)
-        if fun.value() == "정의":
+        if fun.value() == "정의":       # 키워드 '정의'(define) 처리: (정의 sym exp)
             if not isbinary(args):
                 raise ErrArgs("정의")
             sym = car(args)
@@ -291,11 +314,11 @@ def eval(expr: Data, env: Data) -> Data:
                 raise ErrType("정의")
             envset(env, sym, val)
             return sym
-        if fun.value() == "람다":
+        if fun.value() == "람다":       # 키워드 '람다'(lambda) 처리: (람다 (params) body)
             if not isbinary(args):
                 raise ErrArgs("람다")
             return mkclosure(env, car(args), cdr(args))
-        if fun.value() == "만약":
+        if fun.value() == "만약":       # 키워드 '만약'(if) 처리: (만약 cond tval fval)
             if not isternary(args):
                 raise ErrArgs("만약")
             cond = eval(car(args), env)
@@ -303,7 +326,22 @@ def eval(expr: Data, env: Data) -> Data:
             fval = car(cdr(cdr(args)))
             val = fval if cond.isnil() else tval
             return eval(val, env)
-        if fun.value() == "매크로":
+        if fun.value() == "조건":       # 키워드 '조건'(cond) 처리: (조건 (cond1 val1) (cond2 val2) ...)
+            if isvoid(args):
+                raise ErrArgs("조건")
+            while not args.isnil():
+                clause = car(args)
+                if not clause.ispair():
+                    raise ErrSyntax()
+                if not cdr(clause).ispair():
+                    raise ErrSyntax()
+                cond = eval(car(clause), env)
+                val = car(cdr(clause))
+                if not cond.isnil():
+                    return eval(val, env)
+                args = cdr(args)
+            return nil
+        if fun.value() == "매크로":     # 키워드 '매크로'(defmacro) 처리: (매크로 (name params) body)
             if not isbinary(args):
                 raise ErrArgs("매크로")
             if not car(args).ispair():
@@ -314,6 +352,27 @@ def eval(expr: Data, env: Data) -> Data:
             macro = mkmacro(env, cdr(car(args)), cdr(args))
             envset(env, name, macro)
             return name
+        if fun.value() == "잠시":       # 키워드 '잠시'(let) 처리 (잠시 ((name val) ...) body)
+            if not isbinary(args):
+                raise ErrArgs("잠시")
+            bnds = car(args)
+            body = car(cdr(args))
+            local_env = mkenv(env)
+            while not bnds.isnil():
+                if not car(bnds).ispair():
+                    raise ErrSyntax()
+                abnd = car(bnds)
+                if not abnd.ispair():           # '잠시'의 한 바인딩이 pair가 아닌 경우
+                    raise ErrType("잠시")
+                if not car(abnd).issymbol():    # '잠시'의 한 바인딩의 이름이 symbol이 아닌 경우
+                    raise ErrType("잠시")
+                sym = car(abnd)
+                val = eval(car(cdr(abnd)), local_env)   # '잠시'의 한 바인딩의 값 계산(let*로 처리)
+                envset(local_env, sym, val)             # '잠시'의 한 바인딩을 환경 local_env에 추가
+                bnds = cdr(bnds)
+            val = eval(body, local_env)                 # '잠시'의 body 계산
+            # env는 그대로이므로 local_env를 삭제하고 회복하는 과정이 필요 없음
+            return val
 
     # builtin functions, lambda, and macro
 
