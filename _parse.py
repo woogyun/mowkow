@@ -85,7 +85,7 @@ class Reader:
             return self._input
     def read2(self) -> str:
         try:
-            self._input = input(self._prompt2)
+            self._input = input(self._prompt2 + self.indent())
         except EOFError:
             return ""
         else:
@@ -96,6 +96,8 @@ class Reader:
         self._depth += 1
     def nestout(self) -> None:
         self._depth -= 1
+    def indent(self) -> str:
+        return self._depth * " "
     def remains(self) -> str:
         return self._input
 
