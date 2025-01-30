@@ -62,7 +62,7 @@ def main():
         except ErrLisp as err:
             eprint(f"오류: {err}")
         except EOFError:
-            eprint(f"'머꼬' 사용에 감사드립니다.")
+            eprint("'머꼬'를 사용해 주셔서 고맙습니다.")
             break
         # except RunOutOfInput:
         #     print(f"'머꼬' 사용에 감사드립니다.")

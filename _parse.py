@@ -35,6 +35,7 @@ class Reader:
     def __init__(self):
         self._LA = None
         self._input = ""
+        self._column = 0
         self._depth = 0
         self._prompt1 = ">  "
         self._prompt2 = ".. "
@@ -46,6 +47,7 @@ class Reader:
             if s[0] in ws:
                 s = s[1:]
                 self._input = s
+                self._column += 1
                 continue
             if s[0] in ";":
                 i = 0
@@ -53,16 +55,18 @@ class Reader:
                     i += 1
                 s = s[i:]
                 self._input = s
+                self._column = 0
                 continue
             if s.startswith(",@"):      # ",@" should be tested before ","
                 tok = ",@"
             elif s[0] in "().',`":
                 tok = s[0]
             else:
-                toks = re.split(r"\s|\(|\)", s)
+                toks = re.split(r"[\s()]", s)
                 tok = toks[0]
             tlen = len(tok)
             self._input = s[tlen:]
+            self._column += tlen
             self._LA = tok
             return tok
         if self._depth > 0:
@@ -104,7 +108,6 @@ class Reader:
 YY_reader = Reader()   # The historical prefix "YY_" is attached to make it global
 
 def read_expr() -> Data:
-    global YY_reader
     if YY_reader.LA() == "(":
         data = read_list()
         return data
@@ -112,40 +115,40 @@ def read_expr() -> Data:
         raise SyntaxError
     elif YY_reader.LA() == "'":
         qlst = cons(mksym("인용"), cons(nil, nil))
-        tok = YY_reader.next_token()
+        _ = YY_reader.next_token()
         data = read_expr()
         qdta = cdr(qlst)
         qdta.setcar(data)
         return qlst
     elif YY_reader.LA() == "`":
         qlst = cons(mksym("특이인용"), cons(nil, nil))
-        tok = YY_reader.next_token()
+        _ = YY_reader.next_token()
         data = read_expr()
         qdta = cdr(qlst)
         qdta.setcar(data)
         return qlst
     elif YY_reader.LA() == ",@":
         qlst = cons(mksym("비인용연결"), cons(nil, nil))
-        tok = YY_reader.next_token()
+        _ = YY_reader.next_token()
         data = read_expr()
         qdta = cdr(qlst)
         qdta.setcar(data)
         return qlst
     elif YY_reader.LA() == ",":
         qlst = cons(mksym("비인용"), cons(nil, nil))
-        tok = YY_reader.next_token()
+        _ = YY_reader.next_token()
         data = read_expr()
         qdta = cdr(qlst)
         qdta.setcar(data)
         return qlst
     elif YY_reader.LA() == "":
         YY_reader.read2()
-        tok = YY_reader.next_token()
+        _ = YY_reader.next_token()
         return read_expr()
     else:
         tok = YY_reader.LA()
         data = read_atom(tok)
-        tok = YY_reader.next_token()
+        _ = YY_reader.next_token()
         return data
     # for test: return mkint(1910)
 
@@ -156,11 +159,10 @@ def read_atom(s: str) -> Data:
     elif s == '공':
         return nil
     else:
-        return mksym(s)
-    raise SyntaxError
+        return mksym(s)         # 맞는 심볼만 검사 후 raise SyntaxError를 할 수도 있음
 
 def read_list() -> Data:
-    #"""read a list except the leading '('"""
+    """read a list except the leading '('"""
     # YY_reader.match('(')          # 검사할 필요 없음
     YY_reader.nestin()
     YY_reader.next_token()
@@ -177,18 +179,17 @@ def read_list() -> Data:
         prev.setcdr(last)
         prev = last
     if YY_reader.LA() == '.':
-        #s1 = s2             # match('.')
-        YY_reader.match('.')
-        tok = YY_reader.next_token()
+        YY_reader.match('.')    #s1 = s2 였었나? YY_reader 도입 전에는 match('.')
+        _ = YY_reader.next_token()
         elem = read_expr()
-        prev.setcdr(elem)
-        #assert(tok == ')')
+        prev.setcdr(elem)   # last.setcdr(elem)와 같음. 이 시점에서는 assert(_ == ')')
     YY_reader.nestout()
     YY_reader.match(')')
     YY_reader.next_token()
     return lst
 
 def main_p():
+    """test function for parsing"""
     while (s := YY_reader.read()) != "":
         try:
             tok = YY_reader.next_token()
