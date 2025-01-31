@@ -37,6 +37,7 @@ def main():
     envset(env, mksym("#참"), mksym("#참"))
     envset(env, mksym("="), mkbuiltin(builtin_inteq))
     envset(env, mksym("<"), mkbuiltin(builtin_intlt))
+    envset(env, mksym(">"), mkbuiltin(builtin_intgt))
     envset(env, mksym("적용"), mkbuiltin(builtin_apply))
     envset(env, mksym("같다?"), mkbuiltin(builtin_eq))
     envset(env, mksym("짝?"), mkbuiltin(builtin_ispair))
@@ -112,6 +113,8 @@ D:\dev\mowkow>python _main.py
 ..    (y (+ 1 x)))
 ..   (+ x y))
 5
+>  (잠시 ((x 3) (f (람다 (n) (만약 (= n 0) 1 (* n (f (- n 1))))))) (f x))
+6
 """
 
 

@@ -1,6 +1,5 @@
 #coding: utf-8
 
-from typing import Tuple
 from _data import *
 from _error import *
 import re
@@ -190,12 +189,12 @@ def read_list() -> Data:
 
 def main_p():
     """test function for parsing"""
-    while (s := YY_reader.read()) != "":
+    while (_ := YY_reader.read()) != "":
         try:
-            tok = YY_reader.next_token()
+            _ = YY_reader.next_token()
             expr = read_expr()
             print(expr)
-        except:
+        except SyntaxError:
             print("Syntax Error")
 
 if __name__ == "__main__":

@@ -130,8 +130,18 @@ def builtin_intlt(args: Data) -> Data:
     a = car(args)
     b = car(cdr(args))
     if not a.isint() or not b.isint():
-        raise ErrType("<builtin <>")
+        raise ErrType("<내장함수 '<'>")
     return mksym("#참") if a.value() < b.value() else nil
+
+def builtin_intgt(args: Data) -> Data:
+    '''정수 크다 함수: (> 1 2) -> 공'''
+    if not isbinary(args):
+        raise ErrArgs("<내장함수 '>'>")
+    a = car(args)
+    b = car(cdr(args))
+    if not a.isint() or not b.isint():
+        raise ErrType("<내장함수 '>'>")
+    return mksym("#참") if a.value() > b.value() else nil
 
 def builtin_apply(args: Data) -> Data:
     '''함수 적용 함수: (apply fn args) -> (fn . args)'''
@@ -449,6 +459,7 @@ def main_e():
     envset(env, mksym("짝?"), mkbuiltin(builtin_ispair))
     envset(env, mksym("="), mkbuiltin(builtin_inteq))
     envset(env, mksym("<"), mkbuiltin(builtin_intlt))
+    envset(env, mksym(">"), mkbuiltin(builtin_intgt))
     envset(env, mksym("부정"), mkbuiltin(builtin_not))
     envset(env, mksym("입력"), mkbuiltin(builtin_read))
     envset(env, mksym("출력"), mkbuiltin(builtin_write))
@@ -480,7 +491,7 @@ if __name__ == "__main__":
 
 """
 키워드:     정의(define), 람다(lambda), 만약(if), 인용(quote), 매크로(macro),
-            특이인용(`), 비인용(,), 비인용연결(,@)
+            특이인용(`), 비인용(,), 비인용연결(,@), _모(gensym), 조건(cond), 잠시(let*)
             # 비인용해제(unquote-splicing)
 내장함수:   머(car), 꼬(cdr), 짝(cons), 
             +, -, *, /, 
