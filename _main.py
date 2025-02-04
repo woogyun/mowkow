@@ -4,26 +4,36 @@
 #       YY_reader, YY_input 설정
 #       read_expr 호출 전에 next_token으로 LA를 먼저 설정
 
-from _data import *
-from _parse import *
-from _error import *
-from _eval import *
+import argparse
+
+from _data import Data, nil, mksym, mkbuiltin
+from _parse import YY_reader, Reader, read_expr
+from _error import IsVerbose, eprint, ErrLisp
+from _eval import mkenv, envset, eval, \
+        builtin_car, builtin_cdr, builtin_cons, \
+        builtin_add, builtin_sub, builtin_mul, builtin_div, \
+        builtin_inteq, builtin_intlt, builtin_intgt, \
+        builtin_apply, builtin_eq, builtin_ispair, builtin_isnil, builtin_not, builtin_and, builtin_or, \
+        builtin_read, builtin_write, builtin_gensym 
 
 def load_file(env: Data, path: str) -> None:
-    global YY_reader
-    eprint(f"'{path}'을(를) 불러오는 중입니다...")
+    #global YY_reader: Reader
+
+    if IsVerbose:
+        eprint(f"'{path}'을(를) 불러오는 중입니다...")
     YY_reader.readfile(path)
     tok = YY_reader.next_token()
     while YY_reader.remains() != "":
         try:
             expr = read_expr()
             result = eval(expr, env)
-            eprint(result)
+            if result != None:
+                eprint(result)
         except ErrLisp as err:
             eprint(f"오류: {err}")
 
 def main():
-    global YY_reader
+    #global YY_reader: Reader
 
     env = mkenv(nil)
 
@@ -49,16 +59,32 @@ def main():
     envset(env, mksym("출력"), mkbuiltin(builtin_write))
     envset(env, mksym("_모"), mkbuiltin(builtin_gensym))
 
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument("files", nargs="*", help="소스 파일 목록")
+    # argparser.add_argument("-v", "--verbose", help="상세 정보 출력")
+    arg = argparser.parse_args()
+    # if arg.verbose:
+    #     IsVerbose = True
+
     load_file(env, "library_kor.scm")
 
-    # reader = StdinReader()        # reader is set in _parse as global
-    while (s := YY_reader.read()) != "":
+    for file in arg.files:
+        load_file(env, file)
+
+    if not arg.files:
+        # IsVerbose = True
+        eval_print_loop(env)
+        return
+    
+def eval_print_loop(env: Data) -> None:
+    while (_ := YY_reader.read()) != "":
         try:
             # print(f"BEFORE: {s}")
-            tok = YY_reader.next_token()
+            _ = YY_reader.next_token()
             expr = read_expr()
             val = eval(expr, env)
-            print(val)
+            if val != None:
+                print(val)
             # print(f"AFTER:  {YY_reader.remains()}")
         except ErrLisp as err:
             eprint(f"오류: {err}")

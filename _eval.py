@@ -2,7 +2,7 @@
 
 from _data import *
 from _parse import *
-from _error import *
+from _error import IsVerbose, eprint, ErrLisp, ErrSyntax, ErrUnbound, ErrArgs, ErrType
 
 # Ph 8
 #       global isternary(Data): 인수 개수가 3개인지 검사
@@ -323,7 +323,9 @@ def eval(expr: Data, env: Data) -> Data:
             else: # not sym.issymbol():
                 raise ErrType("정의")
             envset(env, sym, val)
-            return sym
+            if IsVerbose:
+                eprint(sym)
+            return None
         if fun.value() == "람다":       # 키워드 '람다'(lambda) 처리: (람다 (params) body)
             if not isbinary(args):
                 raise ErrArgs("람다")
@@ -361,7 +363,9 @@ def eval(expr: Data, env: Data) -> Data:
                 raise ErrType("매크로")
             macro = mkmacro(env, cdr(car(args)), cdr(args))
             envset(env, name, macro)
-            return name
+            if IsVerbose:
+                eprint(name)
+            return None
         if fun.value() == "잠시":       # 키워드 '잠시'(let) 처리 (잠시 ((name val) ...) body)
             if not isbinary(args):
                 raise ErrArgs("잠시")

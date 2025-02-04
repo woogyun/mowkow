@@ -2,6 +2,8 @@
 
 import sys
 
+IsVerbose = False
+
 def eprint(*args, **kwargs) -> None:
     '''stderr에 출력하는 함수'''
     print(*args, file=sys.stderr, **kwargs)
