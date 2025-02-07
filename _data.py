@@ -27,10 +27,12 @@
 #               Data.ismacro() 추가
 #               Macro 생성자를 호출하는 전역 함수 mkmacro 추가
 
-from _error import *
+from _error import ErrType, ErrSyntax
 
 class Data:
+    """클래스 Data는 머꼬의 모든 데이터 클래스의 부모 클래스입니다."""
     def __init__(self):
+        """Data 클래스는 추상 클래스이므로 비워 두었습니다."""
         pass
     def ispair(self) -> bool:
         return False

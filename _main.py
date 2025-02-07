@@ -18,9 +18,10 @@ from _eval import mkenv, envset, eval, \
 
 def load_file(env: Data, path: str) -> None:
     #global YY_reader: Reader
+    # global IsVerbose
 
-    if IsVerbose:
-        eprint(f"'{path}'을(를) 불러오는 중입니다...")
+    # if IsVerbose:
+    #     eprint(f"'{path}'을(를) 불러오는 중입니다...")
     YY_reader.readfile(path)
     tok = YY_reader.next_token()
     while YY_reader.remains() != "":
@@ -34,6 +35,7 @@ def load_file(env: Data, path: str) -> None:
 
 def main():
     #global YY_reader: Reader
+    # global IsVerbose
 
     env = mkenv(nil)
 
@@ -74,7 +76,6 @@ def main():
     if not arg.files:
         # IsVerbose = True
         eval_print_loop(env)
-        return
     
 def eval_print_loop(env: Data) -> None:
     while (_ := YY_reader.read()) != "":

@@ -199,7 +199,7 @@ def builtin_and(args: Data) -> Data:
     '''그리고 함수: (그리고 #참 #참) -> #참'''     # (그리고 #참 #참) -> #참, (그리고 #참 공) -> 공 (cf. 다 for 모두다)
     fname = "그리고"
     if not isbinary(args):
-        raise ErrArgs("<내장함수 '{fname}'>")
+        raise ErrArgs(f"<내장함수 '{fname}'>")
     a = car(args)
     b = car(cdr(args))
     if a.issymbol() and a.value() == "#참":
@@ -213,7 +213,7 @@ def builtin_or(args: Data) -> Data:
     '''또는 함수: (또는 #참 공) -> #참'''       # (또는 #참 공) -> #참, (또는 공 공) -> 공 (cf. 또 for 혹)
     fname = "또는"      # 혹
     if not isbinary(args):
-        raise ErrArgs("<내장함수 '{fname}'>")
+        raise ErrArgs(f"<내장함수 '{fname}'>")
     a = car(args)
     b = car(cdr(args))
     if a.isnil():
