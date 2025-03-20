@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
 
 """ TEST Session for Ph 15
-D:\dev\mowkow>python _main.py
+>python _main.py
 'library_kor.scm'을(를) 불러오는 중입니다...
 머리
 꼬리
@@ -184,7 +184,7 @@ Error: Symbol not bound for 'x'
 """
 
 """ 내장 함수 _모, 라이브러리 새함수 추가 후 테스트
-\dev\mowkow>python _main.py
+>python _main.py
 'library_kor.scm'을(를) 불러오는 중입니다...
 머리
 꼬리
