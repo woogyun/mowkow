@@ -76,17 +76,18 @@ def main():
     if not arg.files:
         # IsVerbose = True
         eval_print_loop(env)
-    
+
 def eval_print_loop(env: Data) -> None:
+    """ 표준 입력에서 읽고 env 하에서 실행한 후 출력을 반복함
+        빈 행을 입력하면 종료
+    """
     while (_ := YY_reader.read()) != "":
         try:
-            # print(f"BEFORE: {s}")
             _ = YY_reader.next_token()
             expr = read_expr()
             val = eval(expr, env)
             if val != None:
                 print(val)
-            # print(f"AFTER:  {YY_reader.remains()}")
         except ErrLisp as err:
             eprint(f"오류: {err}")
         except EOFError:

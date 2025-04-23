@@ -238,7 +238,7 @@ def builtin_read(args: Data) -> Data:
     else:
         raise ErrType(f"<내장함수 '{fname}'>")
 
-def builtin_write(args: Data) -> Data:
+def builtin_write(args: Data) -> None:
     '''출력 함수: (출력 123) -> 123'''     # (출력 123) -> 123 (cf. 쓰기)
     fname = "출력"
     if not isunary(args):
@@ -246,10 +246,8 @@ def builtin_write(args: Data) -> Data:
     a = car(args)
     if a.issymbol() or a.isint() or a.isnil():
         print(a.value())
-        return mksym("#참")
     elif a.isbuiltin():
         print(f"<내장함수>")
-        return mksym("#참")
     elif a.ispair():
         print(f"{a}")
 
