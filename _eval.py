@@ -226,8 +226,8 @@ def builtin_or(args: Data) -> Data:
     #     raise ErrType("<내장함수 '{fname}'>")
 
 def builtin_read(args: Data) -> Data:
-    '''입력 함수: (입력) -> 123'''     # (입력) -> 123 (cf. 읽기)
-    fname = "입력"
+    '''입력 함수: (읽기) -> 123'''     # (읽기) -> 123 (cf. 입력)
+    fname = "읽기"
     if not isvoid(args):
         raise ErrArgs(f"<내장함수 '{fname}'>")
     line = input("")
@@ -239,13 +239,13 @@ def builtin_read(args: Data) -> Data:
         raise ErrType(f"<내장함수 '{fname}'>")
 
 def builtin_write(args: Data) -> None:
-    '''출력 함수: (출력 123) -> 123'''     # (출력 123) -> 123 (cf. 쓰기)
+    '''출력 함수: (쓰기 123) -> 123'''     # (쓰기 123) -> 123 (cf. 출력)
     fname = "출력"
     if not isunary(args):
         raise ErrArgs(f"<내장함수 '{fname}'>")
     a = car(args)
     if a.issymbol() or a.isint() or a.isnil():
-        print(a.value())
+        print(a.value(), end="")
     elif a.isbuiltin():
         print(f"<내장함수>")
     elif a.ispair():
@@ -447,7 +447,7 @@ def apply(fn: Data, args: Data) -> Data:
         body = cdr(body)
     return result
 
-def main_e():
+def _main_e():
     env = mkenv(nil)
 
     envset(env, mksym("머"), mkbuiltin(builtin_car))
@@ -463,8 +463,8 @@ def main_e():
     envset(env, mksym("<"), mkbuiltin(builtin_intlt))
     envset(env, mksym(">"), mkbuiltin(builtin_intgt))
     envset(env, mksym("부정"), mkbuiltin(builtin_not))
-    envset(env, mksym("입력"), mkbuiltin(builtin_read))
-    envset(env, mksym("출력"), mkbuiltin(builtin_write))
+    envset(env, mksym("읽기"), mkbuiltin(builtin_read))
+    envset(env, mksym("쓰기"), mkbuiltin(builtin_write))
     # envset(env, mksym("_새글"), mkbuiltin(builtin_gensym))
 
     # load_file(env, "library_kor.scm")
@@ -489,7 +489,7 @@ def main_e():
     #         print(f"Error: {err}")
 
 if __name__ == "__main__":
-    main_e()
+    _main_e()
 
 """
 키워드:     정의(define), 람다(lambda), 만약(if), 인용(quote), 매크로(macro),
@@ -498,7 +498,7 @@ if __name__ == "__main__":
 내장함수:   머(car), 꼬(cdr), 짝(cons), 
             +, -, *, /, 
             짝?(pair?), 공?(nil?), =, <, 부정(not), 
-            입력(read), 출력(write)
+            읽기(read), 쓰기(write)
 내장 리터럴: 공(nil), #참(t)
 """
 

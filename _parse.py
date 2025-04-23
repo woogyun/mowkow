@@ -187,7 +187,7 @@ def read_list() -> Data:
     YY_reader.next_token()
     return lst
 
-def main_p():
+def _main_p():
     """test function for parsing"""
     while (_ := YY_reader.read()) != "":
         try:
@@ -198,4 +198,4 @@ def main_p():
             print("Syntax Error")
 
 if __name__ == "__main__":
-    main_p()
+    _main_p()
