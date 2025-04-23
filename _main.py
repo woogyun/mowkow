@@ -4,6 +4,8 @@
 #       YY_reader, YY_input 설정
 #       read_expr 호출 전에 next_token으로 LA를 먼저 설정
 
+import os
+import sys
 import argparse
 
 from _data import Data, nil, mksym, mkbuiltin
@@ -15,6 +17,16 @@ from _eval import mkenv, envset, eval, \
         builtin_inteq, builtin_intlt, builtin_intgt, \
         builtin_apply, builtin_eq, builtin_ispair, builtin_isnil, builtin_not, builtin_and, builtin_or, \
         builtin_read, builtin_write, builtin_gensym 
+
+def resource_path(relative_path):
+    """ 실행 파일 내부 또는 개발 환경에서 리소스 경로 가져오기 """
+    try:
+        # PyInstaller가 사용하는 환경변수 _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 def load_file(env: Data, path: str) -> None:
     #global YY_reader: Reader
@@ -68,7 +80,8 @@ def main():
     # if arg.verbose:
     #     IsVerbose = True
 
-    load_file(env, "library_kor.scm")
+    lib_file_path = resource_path("library_kor.scm")
+    load_file(env, lib_file_path)
 
     for file in arg.files:
         load_file(env, file)
