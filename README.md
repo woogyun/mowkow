@@ -2,9 +2,9 @@
 머꼬: 한글 LISP
 
 ## 실행 방법
-Python 3.x 설치 후 다음 명령을 수행합니다.
+Python 3.10 이상을 설치한 후 다음 명령을 수행합니다.
 ```
-python _main.py
+python main.py
 ```
 Windows 운영체제에서는 dist의 mk.exe를 다운로드하셔서 명령 프롬프트에서 다음과 같이 수행합니다.
 ```
@@ -51,11 +51,11 @@ mk.exe
 테스트 코드 폴더의 테스트 파일 source.mk를 수행하려면 다음과 같이 수행하시면 됩니다.
 
 ```
-python _main.py test_code/source.mk
+python main.py test_code/source.mk
 ```
 
 윈도우 실행 파일 mk.exe로 수행하시려면 다음과 같이 수행하시면 됩니다.
 ```
-mk.exe test_code\source.mk
+mk.exe test_code/source.mk
 ```
 
