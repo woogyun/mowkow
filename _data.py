@@ -42,6 +42,8 @@ class Data:
         return False
     def isint(self) -> bool:
         return False
+    def isstr(self) -> bool:
+        return False
     def isbuiltin(self) -> bool:
         return False
     def isclosure(self) -> bool:
@@ -71,7 +73,7 @@ class Pair(Data):
                 tail = tail._cdr
             else:
                 rval += f" . {tail}"
-                break                   # do not forget to break
+                break                       # break가 꼭 필요함
         rval += ")"
         return rval
     def setcar(self, car_val: Data) -> None:
@@ -103,13 +105,24 @@ class Integer(Data):
     def value(self) -> int:
         return self._val
 
+class String(Data):
+    def __init__(self, s: str):
+        self._val = s
+    def isstr(self) -> bool:
+        return True
+    def __str__(self) -> str:
+        return self._val                # Des250429: f'"{self._val}"'로 했다가 바꾸었음
+    def value(self) -> str:
+        return self._val
+
 class Builtin(Data):
     def __init__(self, fn):
         self._fun = fn
     def isbuiltin(self) -> bool:
         return not super().isbuiltin()
     def __str__(self) -> str:
-        return f"#<내장 함수: {self._fun}>"
+        fname = f"{self._fun}".split()[2]
+        return f"#<내장 함수: {fname}>"
     def fun(self):
         return self._fun
 
@@ -176,6 +189,9 @@ def mkint(ival: int) -> Data:
 def mksym(sval: str) -> Data:
     return Symbol(sval)
 
+def mkstr(sval: str) -> Data:
+    return String(sval)
+
 def mkbuiltin(fn) -> Data:
     return Builtin(fn)
 
@@ -216,5 +232,6 @@ def allsymbols(params: Data) -> None:
 if __name__ == '__main__':
     print(mkint(1910))
     print(mksym("안녕"))
+    print(mkstr("안녕, 문자열?"))
     print(cons(mkint(8), cons(mkint(2), cons(mkint(9), nil))))
     print(cons(mkint(3), mkint(4)))

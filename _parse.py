@@ -30,6 +30,24 @@ def slurp(path: str) -> str:
     with io.open(path, mode='r', encoding='utf-8') as reader:
         return reader.read()
 
+def read_esc_char(srep: str) -> tuple[str, int]:
+    """정수에 대한 문자를 반환하기 위한 것이지만 그냥 \"만 건너뛰고 '\"'와 2를 반환하는 것으로 구현함"""
+    # if not srep[1].isdigit():       # alphabetic escape sequence
+    #     return srep[1], 2
+    # if srep[1:3].upper() == "0X":   # hexadecimal
+    #     matched = re.search(r"0[xX][0-9a-fA-F]+", srep[1:])
+    #     hex_str = matched.group(0)
+    #     c = chr(int(hex_str, base=16))
+    #     return c, len(hex_str)+1
+    # if srep[1] == "0":              # octal
+    #     matched = re.search(r"0[0-7]+", srep[1:])
+    #     oct_str = matched.group(0)
+    #     c = chr(int(oct_str, base=8))
+    #     return c, len(oct_str)+1
+    if srep[1] == '"':
+        return srep[:2], 2
+    return None, 1                  # 오류(unknown escape sequence)
+
 class Reader:
     def __init__(self):
         self._LA = None
@@ -60,12 +78,31 @@ class Reader:
                 tok = ",@"
             elif s[0] in "().',`":
                 tok = s[0]
+            elif s[0] == '"':
+                i = 1
+                while i < len(s) and s[i] not in ['"'] + eols:
+                    if s[i] == '\\':
+                        c, k = read_esc_char(s[i:])
+                        i += k
+                        continue
+                    i += 1
+                if i == len(s) or s[i] in eols:
+                    print(f"오류: 토큰 '{s[:i]}' 부근에서 어휘 오류")
+                    # 오류 복구: 닫는 따옴표를 토큰에 추가
+                    if i != len(s): # eols를 만난 경우
+                        i -= 1      # eol 문자 전까지 내용을 문자열 토큰으로 만들기 위함
+                    tok = s[:i] + '"'
+                    s = s[i:]
+                else:               # s[i] == '"':
+                    i += 1      # '"'를 읽음
+                    tok = s[:i]
+                    # s = s[i:]
             else:
                 toks = re.split(r"[\s()]", s)
                 tok = toks[0]
             tlen = len(tok)
             self._input = s[tlen:]
-            self._column += tlen
+            self._column += tlen        # 문자열 리터럴의 경우 _column이 작아지는 오류가 발생할 수 있음
             self._LA = tok
             return tok
         if self._depth > 0:
@@ -76,7 +113,7 @@ class Reader:
         return tok
     def match(self, tok) -> None:
         if tok != self._LA:
-            print(f"ERROR: Lexical Error near '{YY_reader.LA()}'")
+            print(f"오류: 토큰 '{YY_reader.LA()}' 부근에서 어휘 오류")
     def LA(self) -> str:
         return self._LA
     def read(self) -> str:
@@ -157,6 +194,8 @@ def read_atom(s: str) -> Data:
         return mkint(int(s))
     elif s == '공':
         return nil
+    elif s[0] == '"':
+        return mkstr(s)
     else:
         return mksym(s)         # 맞는 심볼만 검사 후 raise SyntaxError를 할 수도 있음
 
@@ -168,6 +207,8 @@ def read_list() -> Data:
     result = nil
     if YY_reader.LA() == ')':
         YY_reader.nestout()
+        YY_reader.match(')')
+        YY_reader.next_token()
         return result
     fst = read_expr()  # retract tok and read an expression
     lst = cons(fst, nil)

@@ -230,27 +230,28 @@ def builtin_read(args: Data) -> Data:
     fname = "읽기"
     if not isvoid(args):
         raise ErrArgs(f"<내장함수 '{fname}'>")
-    line = input("")
+    line = input("").strip()
     if line.isdigit():
         return mkint(int(line))
     elif line.isalpha():
         return mksym(line)
+    elif line[0] == line[-1] == '"':    # "문자열"
+        return mkstr(line)
     else:
         raise ErrType(f"<내장함수 '{fname}'>")
 
-def builtin_write(args: Data) -> None:
+def builtin_write(args: Data, terminator="\n") -> None:
     '''출력 함수: (쓰기 123) -> 123'''     # (쓰기 123) -> 123 (cf. 출력)
     fname = "출력"
     if not isunary(args):
         raise ErrArgs(f"<내장함수 '{fname}'>")
     a = car(args)
-    if a.issymbol() or a.isint() or a.isnil():
-        print(a.value(), end="")
-    elif a.isbuiltin():
-        print(f"<내장함수>")
-    elif a.ispair():
-        print(f"{a}")
-
+    if a.issymbol() or a.isint() or a.ispair() or a.isbuiltin():
+        print(a, end=terminator)
+    elif a.isstr():
+        print(a.__str__(), end="")
+    elif a.isnil():
+        print("()", end=terminator)
 
 # 환경
 #   mkenv(parent): 부모 환경이 parent인 환경을 만든다.
@@ -475,7 +476,8 @@ def _main_e():
             tok = YY_reader.next_token()
             expr = read_expr()
             val = eval(expr, env)
-            print(val)
+            if val != None:
+                print(val)
             # print(f"AFTER:  {YY_reader.remains()}")
         except ErrLisp as err:
             eprint(f"오류: {err}")
