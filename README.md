@@ -59,3 +59,20 @@ python main.py test_code/source.mk
 mk.exe test_code/source.mk
 ```
 
+## Windows용 배치 파일
+
+머꼬 프로그램 파일은 UTF-8 인코딩으로 작성해야 합니다.
+`test_code`의 예제 프로그램도 그렇게 작성된 것입니다.
+이를 Windows의 명령 프롬프트(`cmd`) 창에서 보려면 문자 인코딩을 UTF-8 인코딩으로 바꾸어야 합니다.
+이때 다음 명령어를 사용하실 수 있습니다.
+
+```
+gomk
+```
+
+다시 원래 인코딩(code page 949, EUC-KR 호환)으로 명령 프롬프트를 회복하시려면 다음 명령어를 사용하시기 바랍니다.
+
+```
+kmog
+```
+
