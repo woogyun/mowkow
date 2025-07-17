@@ -76,3 +76,8 @@ gomk
 kmog
 ```
 
+## Authors
+
+* **우균(Gyun Woo)** - *최초 작업* - [Gyun Woo](https://github.com/woogyun)
+
+
