@@ -94,8 +94,11 @@ def eval_print_loop(env: Data) -> None:
     """ 표준 입력에서 읽고 env 하에서 실행한 후 출력을 반복함
         빈 행을 입력하면 종료
     """
-    while (_ := YY_reader.read()) != "":
+    while True:
         try:
+            if YY_reader.read() == "":
+                eprint("'머꼬'를 사용해 주셔서 고맙습니다.")
+                break
             _ = YY_reader.next_token()
             expr = read_expr()
             val = eval(expr, env)
@@ -106,6 +109,8 @@ def eval_print_loop(env: Data) -> None:
         except EOFError:
             eprint("'머꼬'를 사용해 주셔서 고맙습니다.")
             break
+        except UnicodeDecodeError:
+            eprint(f"오류: 모르는 문자가 입력되었습니다.")
         # except RunOutOfInput:
         #     print(f"'머꼬' 사용에 감사드립니다.")
 
