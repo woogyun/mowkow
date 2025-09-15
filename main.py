@@ -7,16 +7,114 @@
 import os
 import sys
 import argparse
+from typing import Any, Dict, List, Optional, Sequence, Iterable, NoReturn
 
 from _data import Data, nil, mksym, mkbuiltin
-from _parse import YY_reader, Reader, read_expr
+from _parse import YY_reader, read_expr
 from _error import IsVerbose, eprint, ErrLisp
-from _eval import mkenv, envset, eval, \
+from _eval import mkenv, envset, mk_eval, \
         builtin_car, builtin_cdr, builtin_cons, \
         builtin_add, builtin_sub, builtin_mul, builtin_div, \
         builtin_inteq, builtin_intlt, builtin_intgt, \
         builtin_apply, builtin_eq, builtin_ispair, builtin_isnil, builtin_not, builtin_and, builtin_or, \
         builtin_read, builtin_write, builtin_gensym 
+
+import argparse
+
+class KoreanHelpFormatter(argparse.HelpFormatter):
+    """argparse의 영어 메시지를 한글로 변경하는 HelpFormatter"""
+    
+    def __init__(self, prog: str, indent_increment: int = 2, 
+                 max_help_position: int = 24, width: Optional[int] = None):
+        super().__init__(prog, indent_increment, max_help_position, width)
+    
+    def _format_usage(self, usage: Optional[str], actions: Iterable[argparse.Action], 
+                      groups: Iterable[argparse._MutuallyExclusiveGroup], prefix: Optional[str]) -> str:
+        """usage 메시지를 한글로 변경"""
+        if prefix is None:
+            prefix = '사용법: '
+        return super()._format_usage(usage, actions, groups, prefix)
+    
+
+class KoreanArgumentParser(argparse.ArgumentParser):
+    """한글 오류 메시지를 지원하는 ArgumentParser"""
+    
+    def __init__(self, *args, **kwargs):
+        # 기본 formatter_class를 KoreanHelpFormatter로 설정
+        if 'formatter_class' not in kwargs:
+            kwargs['formatter_class'] = KoreanHelpFormatter
+        super().__init__(*args, **kwargs)
+        
+        # 한글 메시지 딕셔너리
+        self.korean_messages = {
+            # 기본 오류 메시지들
+            'unrecognized arguments': '인식되지 않는 인수',
+            'the following arguments are required': '다음 인수들이 필요합니다',
+            'argument': '인수',
+            'invalid choice': '잘못된 선택',
+            'choose from': '다음 중에서 선택하세요',
+            'invalid int value': '잘못된 정수 값',
+            'invalid float value': '잘못된 실수 값',
+            'expected one argument': '하나의 인수가 필요합니다',
+            'expected one': '하나의',
+            'expected at least one argument': '최소 하나의 인수가 필요합니다',
+            'expected at most one argument': '최대 하나의 인수만 허용됩니다',
+            'ambiguous option': '모호한 옵션',
+            'usage': '사용법',
+            'optional arguments': '선택적 인수',
+            'positional arguments': '위치 인수',
+            'show this help message and exit': '이 도움말 메시지를 표시하고 종료',
+            'error': '오류',
+        }
+    
+    def error(self, message: str) -> NoReturn:
+        """오류 메시지를 한글로 번역하여 출력"""
+        korean_message = self._translate_message(message)
+        # 'error: ' 접두사도 한글로 변경
+        self.print_usage(sys.stderr)
+        args = {'prog': self.prog, 'message': korean_message}
+        self.exit(2, '%(prog)s: 오류: %(message)s\n' % args)
+    
+    def _translate_message(self, message: str) -> str:
+        """영어 메시지를 한글로 번역"""
+        korean_message = message
+        
+        # 일반적인 패턴들을 한글로 변경
+        for english, korean in self.korean_messages.items():
+            korean_message = korean_message.replace(english, korean)
+        
+        # 특수한 패턴들 처리
+        if 'unrecognized arguments:' in korean_message:
+            korean_message = korean_message.replace('unrecognized arguments:', '인식되지 않는 인수:')
+        
+        if 'the following arguments are required:' in korean_message:
+            korean_message = korean_message.replace('the following arguments are required:', '다음 인수들이 필요합니다:')
+        
+        # 선택지 관련 메시지 처리
+        if 'invalid choice:' in korean_message and '(choose from' in korean_message:
+            parts = korean_message.split('(choose from')
+            if len(parts) == 2:
+                korean_message = f"잘못된 선택: {parts[0].split(':')[1].strip()} (다음 중에서 선택하세요{parts[1]}"
+        
+        return korean_message
+    
+    def print_help(self, file: Optional[Any] = None) -> None:
+        """도움말 메시지의 섹션 제목들을 한글로 변경"""
+        if file is None:
+            file = sys.stdout
+        
+        # 원본 도움말 텍스트를 가져옴
+        help_text = self.format_help()
+        
+        # 섹션 제목들을 한글로 변경
+        help_text = help_text.replace('usage:', '사용법:')
+        help_text = help_text.replace('positional arguments:', '위치 인수:')
+        help_text = help_text.replace('optional arguments:', '선택적 인수:')
+        help_text = help_text.replace('options:', '옵션:')
+        help_text = help_text.replace('show this help message and exit', '이 도움말 메시지를 표시하고 종료')
+        
+        file.write(help_text)
+
 
 def resource_path(relative_path):
     """ 실행 파일 내부 또는 개발 환경에서 리소스 경로 가져오기 """
@@ -39,7 +137,7 @@ def load_file(env: Data, path: str) -> None:
     while YY_reader.remains() != "":
         try:
             expr = read_expr()
-            result = eval(expr, env)
+            result = mk_eval(expr, env)
             if result != None:
                 eprint(result)
         except ErrLisp as err:
@@ -73,20 +171,35 @@ def main():
     envset(env, mksym("쓰기"), mkbuiltin(builtin_write))
     envset(env, mksym("_모"), mkbuiltin(builtin_gensym))
 
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument("files", nargs="*", help="소스 파일 목록")
+    argparser = KoreanArgumentParser(
+        description='머꼬 해석기',
+        prog='mk'
+    )
+
+    argparser.add_argument('-o', '--output', 
+                           dest="out_file", type=str, help='출력 파일명')
     # argparser.add_argument("-v", "--verbose", help="상세 정보 출력")
+    argparser.add_argument("in_files", nargs="*", help="소스 파일 목록")
     arg = argparser.parse_args()
     # if arg.verbose:
     #     IsVerbose = True
 
+    if arg.out_file != None:
+        if os.path.exists(arg.out_file):
+            eprint(f"출력 파일 '{arg.out_file}'가 이미 존재합니다.")
+        else:
+            print(arg.out_file)
+
     lib_file_path = resource_path("library_kor.scm")
     load_file(env, lib_file_path)
 
-    for file in arg.files:
-        load_file(env, file)
+    for file in arg.in_files:
+        if os.path.exists(file):
+            load_file(env, file)
+        else:
+            eprint(f"소스 파일 '{file}'를 찾을 수 없습니다.")
 
-    if not arg.files:
+    if not arg.in_files:
         # IsVerbose = True
         eval_print_loop(env)
 
@@ -101,13 +214,13 @@ def eval_print_loop(env: Data) -> None:
                 break
             _ = YY_reader.next_token()
             expr = read_expr()
-            val = eval(expr, env)
+            val = mk_eval(expr, env)
             if val != None:
                 print(val)
         except ErrLisp as err:
             eprint(f"오류: {err}")
         except EOFError:
-            eprint("'머꼬'를 사용해 주셔서 고맙습니다.")
+            eprint("간편한 '머꼬'를 사용해 주셔서 고맙습니다.")
             break
         except UnicodeDecodeError:
             eprint(f"오류: 모르는 문자가 입력되었습니다.")

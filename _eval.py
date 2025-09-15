@@ -157,21 +157,16 @@ def builtin_eq(args: Data) -> Data:
     '''같다? 함수: (eq a b) -> #참'''
     if not isbinary(args):
         raise ErrArgs("같다?")
-    a = car(args)
-    b = car(cdr(args))
+    a, b = car(args), car(cdr(args))
     if a.isnil() and b.isnil():
         eq = True
-    elif a.issymbol() and b.issymbol():
-        eq = a.value() == b.value()
-    elif a.isint() and b.isint():
+    elif a.issymbol() and b.issymbol() or a.isint() and b.isint():
         eq = a.value() == b.value()
     elif a.isbuiltin() and b.isbuiltin():
         eq = a.fun() == b.fun()
     elif a.ispair() and b.ispair():
         eq = a.car() == b.car() and a.cdr() == b.cdr()
-    elif a.isclosure() and b.isclosure():
-        eq = a.val() == b.val()
-    elif a.ismacro() and b.ismacro():
+    elif a.isclosure() and b.isclosure() or a.ismacro() and b.ismacro():
         eq = a.val() == b.val()
     else:
         eq = False
@@ -289,7 +284,7 @@ def envset(env: Data, symbol: Data, value: Data) -> None:
     bind = cons(symbol, value)              # new entry
     env.setcdr(cons(bind, cdr(env)))        # prepend a new entry
 
-def eval(expr: Data, env: Data) -> Data:
+def mk_eval(expr: Data, env: Data) -> Data:
     '''수식 expr을 환경 env에서 계산한다.'''
     if expr.issymbol():
         return envget(env, expr)
@@ -318,7 +313,7 @@ def eval(expr: Data, env: Data) -> Data:
                 # if not cdr(cdr(args)).isnil():
                 #     raise ErrArgs("define")
                 exp = car(cdr(args))
-                val = eval(exp, env)
+                val = mk_eval(exp, env)
             else: # not sym.issymbol():
                 raise ErrType("정의")
             envset(env, sym, val)
@@ -332,11 +327,11 @@ def eval(expr: Data, env: Data) -> Data:
         if fun.value() == "만약":       # 키워드 '만약'(if) 처리: (만약 cond tval fval)
             if not isternary(args):
                 raise ErrArgs("만약")
-            cond = eval(car(args), env)
+            cond = mk_eval(car(args), env)
             tval = car(cdr(args))
             fval = car(cdr(cdr(args)))
             val = fval if cond.isnil() else tval
-            return eval(val, env)
+            return mk_eval(val, env)
         if fun.value() == "조건":       # 키워드 '조건'(cond) 처리: (조건 (cond1 val1) (cond2 val2) ...)
             if isvoid(args):
                 raise ErrArgs("조건")
@@ -346,10 +341,10 @@ def eval(expr: Data, env: Data) -> Data:
                     raise ErrSyntax()
                 if not cdr(clause).ispair():
                     raise ErrSyntax()
-                cond = eval(car(clause), env)
+                cond = mk_eval(car(clause), env)
                 val = car(cdr(clause))
                 if not cond.isnil():
-                    return eval(val, env)
+                    return mk_eval(val, env)
                 args = cdr(args)
             return nil
         if fun.value() == "매크로":     # 키워드 '매크로'(defmacro) 처리: (매크로 (name params) body)
@@ -380,17 +375,17 @@ def eval(expr: Data, env: Data) -> Data:
                 if not car(abnd).issymbol():    # '잠시'의 한 바인딩의 이름이 symbol이 아닌 경우
                     raise ErrType("잠시")
                 sym = car(abnd)
-                val = eval(car(cdr(abnd)), local_env)   # '잠시'의 한 바인딩의 값 계산(let*로 처리)
+                val = mk_eval(car(cdr(abnd)), local_env)   # '잠시'의 한 바인딩의 값 계산(let*로 처리)
                 envset(local_env, sym, val)             # '잠시'의 한 바인딩을 환경 local_env에 추가
                 bnds = cdr(bnds)
-            val = eval(body, local_env)                 # '잠시'의 body 계산
+            val = mk_eval(body, local_env)                 # '잠시'의 body 계산
             # env는 그대로이므로 local_env를 삭제하고 회복하는 과정이 필요 없음
             return val
 
     # builtin functions, lambda, and macro
 
     # Evaluate operator
-    fn = eval(fun, env)     # eval the function part
+    fn = mk_eval(fun, env)     # eval the function part
 
     if fn.ismacro():        # if the function is a macro
         mval = fn.val()
@@ -399,13 +394,13 @@ def eval(expr: Data, env: Data) -> Data:
         mbody = cdr(cdr(mval))
         newfn = mkclosure(menv, mparams, mbody)
         expansion = apply(newfn, args)
-        return eval(expansion, env)
+        return mk_eval(expansion, env)
 
     # Evaluate arguments
     args = cplist(args)     # copy the argument list
     p = args
     while not p.isnil():
-        p.setcar(eval(car(p), env))
+        p.setcar(mk_eval(car(p), env))
         p = cdr(p)
     return apply(fn, args)
     # if not fun.issymbol():      
@@ -444,7 +439,7 @@ def apply(fn: Data, args: Data) -> Data:
     if not args.isnil():
         raise ErrArgs("<#클로저>")
     while not body.isnil():     # q_230102: 왜 body를 계속 계산하나? 수식 하나 아닌가?
-        result = eval(car(body), env)
+        result = mk_eval(car(body), env)
         body = cdr(body)
     return result
 
@@ -475,7 +470,7 @@ def _main_e():
             # print(f"BEFORE: {s}")
             tok = YY_reader.next_token()
             expr = read_expr()
-            val = eval(expr, env)
+            val = mk_eval(expr, env)
             if val != None:
                 print(val)
             # print(f"AFTER:  {YY_reader.remains()}")
