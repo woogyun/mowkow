@@ -246,7 +246,7 @@ def builtin_read(args: Data) -> Data:
 
 def builtin_write(args: Data, terminator="\n") -> None:
     '''출력 함수: (쓰기 123) -> 123'''    # (쓰기 123) -> 123 (cf. 출력)
-    fname = "출력"
+    fname = "쓰기"
     if not isunary(args):
         raise ErrArgs(f"<내장함수 '{fname}'>")
     a = car(args)                           # pyright: ignore[reportArgumentType]

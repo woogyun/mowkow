@@ -210,7 +210,7 @@ def eval_print_loop(env: Data) -> None:
     while True:
         try:
             if YY_reader.read() == "":
-                eprint("'머꼬'를 사용해 주셔서 고맙습니다.")
+                eprint("간편한 한글 프로그래밍 언어 '머꼬'를 사용해 주셔서 고맙습니다.")
                 break
             _ = YY_reader.next_token()
             expr = read_expr()
@@ -220,7 +220,7 @@ def eval_print_loop(env: Data) -> None:
         except ErrLisp as err:
             eprint(f"오류: {err}")
         except EOFError:
-            eprint("간편한 '머꼬'를 사용해 주셔서 고맙습니다.")
+            eprint("간편한 한글 프로그래밍 언어 '머꼬'를 사용해 주셔서 고맙습니다.")
             break
         except UnicodeDecodeError:
             eprint(f"오류: 모르는 문자가 입력되었습니다.")

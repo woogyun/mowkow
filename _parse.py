@@ -156,7 +156,7 @@ def read_expr() -> Data:
         qdta = cdr(qlst)
         qdta.setcar(data)
         return qlst
-    elif YY_reader.LA() == "`":
+    elif YY_reader.LA() == "`" or YY_reader.LA() == "\\":
         qlst = cons(mksym("특이인용"), cons(nil, nil))
         _ = YY_reader.next_token()
         data = read_expr()
