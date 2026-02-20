@@ -190,7 +190,7 @@ def read_expr() -> Data:
 
 def read_atom(s: str) -> Data:
     """read an integer, nil, or a string"""
-    if s.isdigit() or (len(s) > 1 and (s[0] == '+' or s[0] == '-')):
+    if s.isdigit() or (len(s) > 1 and (s[0] == '+' or s[0] == '-') and s[1:].isdigit()):
         return mkint(int(s))
     elif s[:2] in ["0x", "0X"] and all(c in "0123456789abcedfABCDEF" for c in s[2:]):
         return mkint(int(s, base=16))
