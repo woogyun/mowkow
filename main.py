@@ -177,14 +177,16 @@ def load_file(env: Data, path: str) -> None:
     #     eprint(f"'{path}'을(를) 불러오는 중입니다...")
     YY_reader.readfile(path)
     tok = YY_reader.next_token()
+    name = os.path.basename(path)
     while YY_reader.remains() != "":
         try:
+            start_line = YY_reader._line_num
             expr = read_expr()
             result = mk_eval(expr, env)
             if result != None:
                 eprint(result)
         except ErrLisp as err:
-            eprint(f"오류: {err}")
+            eprint(f"파일: {name}:{start_line} 오류: {err}")
 
 
 def main():

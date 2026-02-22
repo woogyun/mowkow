@@ -59,6 +59,7 @@ class Reader:
         self._depth = 0
         self._prompt1 = ">  "
         self._prompt2 = ".. "
+        self._line_num = 1
 
     def next_token(self) -> str:  # returns the token and set it to LA
         s = self._input
@@ -66,9 +67,13 @@ class Reader:
         ws = [" ", "\t"] + eols
         while s != "":
             if s[0] in ws:
+                if s[0] == '\n':
+                    self._line_num += 1
+                    self._column = 0
+                else:
+                    self._column += 1
                 s = s[1:]
                 self._input = s
-                self._column += 1
                 continue
             if s[0] in ";":
                 i = 0
@@ -143,6 +148,8 @@ class Reader:
 
     def readfile(self, fname) -> str:
         self._input = slurp(fname)
+        self._line_num = 1
+        self._column = 0
 
     def nestin(self) -> None:
         self._depth += 1

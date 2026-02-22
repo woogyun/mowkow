@@ -585,6 +585,7 @@ def mk_eval(expr: Data, env: Data) -> Data:
             old_LA = YY_reader._LA
             old_column = YY_reader._column
             old_depth = YY_reader._depth
+            old_line_num = YY_reader._line_num - 1
 
             # "현재파일" 변수 업데이트 (중첩 load를 위해 필요)
             # 파일 B가 또 다른 파일을 불러올 때를 대비해 환경 변수를 잠시 바꿔줌
@@ -610,7 +611,7 @@ def mk_eval(expr: Data, env: Data) -> Data:
                 YY_reader._LA = old_LA
                 YY_reader._column = old_column
                 YY_reader._depth = old_depth
-
+                YY_reader._line_num = old_line_num
                 # 환경 변수 "현재파일"도 원래대로(파일 A로) 되돌려 놔야 함
                 envset(env, mksym("현재파일"), path)
 
