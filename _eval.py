@@ -1,4 +1,11 @@
 #coding: utf-8
+"""
+Docstring for _eval
+
+라이브러리 함수(builtin_*)와 환경 관련 함수(mkenv, envget, envset), 
+eval을 구현하기 위한 mk_eval(함수 부분의 값을 구하는 함수) 및 apply(적용 함수),
+인수 개수 검사 함수(isvoid, isunary, isbinary, isternary)를 구현한 모듈 
+"""
 
 from _data import *
 from _parse import *

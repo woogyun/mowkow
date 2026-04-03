@@ -133,6 +133,7 @@ def load_file(env: Data, path: str) -> None:
     # if IsVerbose:
     #     eprint(f"'{path}'을(를) 불러오는 중입니다...")
     YY_reader.readfile(path)
+    fname = os.path.basename(path)
     tok = YY_reader.next_token()
     while YY_reader.remains() != "":
         try:
@@ -141,7 +142,40 @@ def load_file(env: Data, path: str) -> None:
             if result != None:
                 eprint(result)
         except ErrLisp as err:
+            line = YY_reader.line()
+            eprint(f"{fname}:{line}: 오류: {err}")
+        except SyntaxError as err:
+            line = YY_reader.line()
+            eprint(f"{fname}:{line}: 오류: {err}")
+
+def eval_print_loop(env: Data) -> None:
+    """ 표준 입력에서 읽고 env 하에서 실행한 후 출력을 반복함
+        빈 행을 입력하면 종료
+    """
+    fname = "<표준 입력>"
+    while True:
+        try:
+            YY_reader.resetpos()
+            if YY_reader.read() == "":
+                eprint("간편한 한글 프로그래밍 언어 '머꼬'를 사용해 주셔서 고맙습니다.")
+                break
+            _ = YY_reader.next_token()
+            expr = read_expr()
+            val = mk_eval(expr, env)
+            if val != None:
+                print(val)
+        except ErrLisp as err:
             eprint(f"오류: {err}")
+        except EOFError:
+            eprint("간편한 한글 프로그래밍 언어 '머꼬'를 사용해 주셔서 고맙습니다.")
+            break
+        except UnicodeDecodeError:
+            eprint(f"오류: 모르는 문자가 입력되었습니다.")
+        except SyntaxError:
+            line = YY_reader.line()
+            col = YY_reader.column()
+            tok = YY_reader.LA()
+            eprint(f"{fname}:{line}:{col}: 구문 오류: '{tok}'")
 
 def main():
     #global YY_reader: Reader
@@ -202,30 +236,6 @@ def main():
     if not arg.in_files:
         # IsVerbose = True
         eval_print_loop(env)
-
-def eval_print_loop(env: Data) -> None:
-    """ 표준 입력에서 읽고 env 하에서 실행한 후 출력을 반복함
-        빈 행을 입력하면 종료
-    """
-    while True:
-        try:
-            if YY_reader.read() == "":
-                eprint("간편한 한글 프로그래밍 언어 '머꼬'를 사용해 주셔서 고맙습니다.")
-                break
-            _ = YY_reader.next_token()
-            expr = read_expr()
-            val = mk_eval(expr, env)
-            if val != None:
-                print(val)
-        except ErrLisp as err:
-            eprint(f"오류: {err}")
-        except EOFError:
-            eprint("간편한 한글 프로그래밍 언어 '머꼬'를 사용해 주셔서 고맙습니다.")
-            break
-        except UnicodeDecodeError:
-            eprint(f"오류: 모르는 문자가 입력되었습니다.")
-        # except RunOutOfInput:
-        #     print(f"'머꼬' 사용에 감사드립니다.")
 
 if __name__ == "__main__":
     main()

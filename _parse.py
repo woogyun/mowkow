@@ -52,6 +52,7 @@ class Reader:
     def __init__(self):
         self._LA = None
         self._input = ""
+        self._line = 1
         self._column = 0
         self._depth = 0
         self._prompt1 = ">  "
@@ -61,7 +62,13 @@ class Reader:
         eols = ["\n", "\r"]
         ws = [" ", "\t"] + eols
         while s != "":
-            if s[0] in ws:
+            if s[0] in eols:                        # 줄바꿈 문자
+                s = s[1:]
+                self._input = s
+                self._line += 1
+                self._column = 0
+                continue
+            if s[0] in ws:                          # 그 외 공백 문자
                 s = s[1:]
                 self._input = s
                 self._column += 1
@@ -72,6 +79,7 @@ class Reader:
                     i += 1
                 s = s[i:]
                 self._input = s
+                self._line += 1
                 self._column = 0
                 continue
             if s.startswith(",@"):      # ",@" should be tested before ","
@@ -132,6 +140,18 @@ class Reader:
             return self._input
     def readfile(self, fname) -> str:
         self._input = slurp(fname)
+        self.resetpos()
+        return self._input
+    def resetpos(self):
+        """입력 위치 재설정(행: 1, 열: 0)"""
+        self._line = 1
+        self._column = 0
+    def line(self) -> int:
+        """리더의 현재 행 번호 반환"""
+        return self._line
+    def column(self) -> int:
+        """리더의 현재 열 번호 반환"""
+        return self._column
     def nestin(self) -> None:
         self._depth += 1
     def nestout(self) -> None:
