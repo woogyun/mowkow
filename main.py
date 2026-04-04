@@ -127,11 +127,12 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 def load_file(env: Data, path: str) -> None:
+    """ env 환경에서 path의 파일을 읽어 수행함"""
     #global YY_reader: Reader
-    # global IsVerbose
+    #global IsVerbose
 
-    # if IsVerbose:
-    #     eprint(f"'{path}'을(를) 불러오는 중입니다...")
+    if IsVerbose:
+        eprint(f"'{path}'을(를) 불러오는 중입니다...")
     YY_reader.readfile(path)
     fname = os.path.basename(path)
     tok = YY_reader.next_token()
@@ -139,7 +140,7 @@ def load_file(env: Data, path: str) -> None:
         try:
             expr = read_expr()
             result = mk_eval(expr, env)
-            if result != None:
+            if result is not None:
                 eprint(result)
         except ErrLisp as err:
             line = YY_reader.line()
