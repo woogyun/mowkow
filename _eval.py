@@ -525,7 +525,7 @@ if __name__ == "__main__":
             # 비인용해제(unquote-splicing)
 내장함수:   머(car), 꼬(cdr), 짝(cons), 
             +, -, *, /, 
-            짝?(pair?), 공?(nil?), =, <, 부정(not), 
+            짝?(pair?), 공?(nil?), =, <, 부정(not), ~(not)
             읽기(read), 쓰기(write)
 내장 리터럴: 공(nil), #참(t)
 """

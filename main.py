@@ -122,7 +122,7 @@ def resource_path(relative_path):
         # PyInstaller가 사용하는 환경변수 _MEIPASS
         base_path = sys._MEIPASS
     except Exception:
-        base_path = os.path.abspath(".")
+        base_path = os.path.dirname(os.path.abspath(__file__))
 
     return os.path.join(base_path, relative_path)
 
@@ -202,6 +202,9 @@ def main():
     envset(env, mksym("부정"), mkbuiltin(builtin_not))
     envset(env, mksym("그리고"), mkbuiltin(builtin_and))
     envset(env, mksym("또는"), mkbuiltin(builtin_or))
+    envset(env, mksym("~"), mkbuiltin(builtin_not))
+    envset(env, mksym("&"), mkbuiltin(builtin_and))
+    envset(env, mksym("|"), mkbuiltin(builtin_or))
     envset(env, mksym("읽기"), mkbuiltin(builtin_read))
     envset(env, mksym("쓰기"), mkbuiltin(builtin_write))
     envset(env, mksym("_모"), mkbuiltin(builtin_gensym))
