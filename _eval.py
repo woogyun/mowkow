@@ -3,11 +3,11 @@
 Docstring for _eval
 
 라이브러리 함수(builtin_*)와 환경 관련 함수(mkenv, envget, envset), 
-eval을 구현하기 위한 mk_eval(함수 부분의 값을 구하는 함수) 및 apply(적용 함수),
+eval을 구현하기 위한 do_eval(함수 부분의 값을 구하는 함수) 및 apply(적용 함수),
 인수 개수 검사 함수(isvoid, isunary, isbinary, isternary)를 구현한 모듈 
 """
 
-from _data import *
+from _data import *       # nil
 from _parse import *
 from _error import IsVerbose, eprint, ErrLisp, ErrSyntax, ErrUnbound, ErrArgs, ErrType
 
@@ -120,7 +120,7 @@ def builtin_div(args: Data) -> Data:
         raise ErrType("<내장함수 '/'>")
     return mkint(a.value() // b.value())    # pyright: ignore[reportAttributeAccessIssue]
 
-def builtin_inteq(args: Data) -> Data:
+def builtin_inteq(args: Data) -> Data:      # 일반 아톰 비교로 확대해야 함
     '''정수 같다 함수: (= 1 1) -> #참'''
     if not isbinary(args):
         raise ErrArgs("<내장함수 '='>")
@@ -252,7 +252,9 @@ def builtin_read(args: Data) -> Data:
         raise ErrType(f"<내장함수 '{fname}'>")
 
 def builtin_write(args: Data, terminator="\n") -> None:
-    '''출력 함수: (쓰기 123) -> 123'''    # (쓰기 123) -> 123 (cf. 출력)
+    ''' 출력 함수: (쓰기 123) -> 123
+        성공적으로 출력한 경우 #참 반환
+    '''    # (쓰기 123) -> 123 (cf. 출력)
     fname = "쓰기"
     if not isunary(args):
         raise ErrArgs(f"<내장함수 '{fname}'>")
@@ -260,9 +262,11 @@ def builtin_write(args: Data, terminator="\n") -> None:
     if a.issymbol() or a.isint() or a.ispair() or a.isbuiltin():
         print(a, end=terminator)
     elif a.isstr():
-        print(a.__str__(), end="")
+        val = a.value()
+        print(f"{val[1:-1]}", end="")
     elif a.isnil():
         print("()", end=terminator)
+    # return cdr(args)              # 본래 monadic io처럼 nil을 return하려 하였음
 
 # 환경
 #   mkenv(parent): 부모 환경이 parent인 환경을 만든다.
@@ -300,7 +304,7 @@ def envset(env: Data, symbol: Data, value: Data) -> None:
     bind = cons(symbol, value)              # new entry
     env.setcdr(cons(bind, cdr(env)))        # prepend a new entry  # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
 
-def mk_eval(expr: Data, env: Data) -> Data:
+def do_eval(expr: Data, env: Data) -> Data:
     '''수식 expr을 환경 env에서 계산한다.'''
     if expr.issymbol():
         return envget(env, expr)
@@ -329,13 +333,13 @@ def mk_eval(expr: Data, env: Data) -> Data:
                 # if not cdr(cdr(args)).isnil():
                 #     raise ErrArgs("define")
                 exp = car(cdr(args))    # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
-                val = mk_eval(exp, env)
+                val = do_eval(exp, env)
             else: # not sym.issymbol():
                 raise ErrType("정의")
             envset(env, sym, val)
             if IsVerbose:
                 eprint(sym)
-            return None
+            return None                 # 공 버그: nil
         if fun.value() == "람다":        # pyright: ignore[reportAttributeAccessIssue] 
             # 키워드 '람다'(lambda) 처리: (람다 (params) body)
             if not isbinary(args):
@@ -345,11 +349,11 @@ def mk_eval(expr: Data, env: Data) -> Data:
             # 키워드 '만약'(if) 처리: (만약 cond tval fval)
             if not isternary(args):
                 raise ErrArgs("만약")
-            cond = mk_eval(car(args), env)      # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
+            cond = do_eval(car(args), env)      # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
             tval = car(cdr(args))               # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
             fval = car(cdr(cdr(args)))          # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
             val = fval if cond.isnil() else tval
-            return mk_eval(val, env)
+            return do_eval(val, env)
         if fun.value() == "조건":        # pyright: ignore[reportAttributeAccessIssue] 
             # 키워드 '조건'(cond) 처리: (조건 (cond1 val1) (cond2 val2) ...)
             if isvoid(args):
@@ -360,12 +364,20 @@ def mk_eval(expr: Data, env: Data) -> Data:
                     raise ErrSyntax()
                 if not cdr(clause).ispair():    # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
                     raise ErrSyntax()
-                cond = mk_eval(car(clause), env)    # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
+                cond = do_eval(car(clause), env)    # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
                 val = car(cdr(clause))              # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
                 if not cond.isnil():
-                    return mk_eval(val, env)
+                    return do_eval(val, env)
                 args = cdr(args)                # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
             return nil
+        if fun.value() == "해":     # monadic `do`
+            if isvoid(args):
+                return nil
+            val = nil
+            while not args.isnil():
+                val = do_eval(car(args), env)
+                args = cdr(args)
+            return val
         if fun.value() == "매크로":      # pyright: ignore[reportAttributeAccessIssue]
             # 키워드 '매크로'(defmacro) 처리: (매크로 (name params) body)
             if not isbinary(args):
@@ -379,7 +391,7 @@ def mk_eval(expr: Data, env: Data) -> Data:
             envset(env, name, macro)
             if IsVerbose:
                 eprint(name)
-            return None
+            return None                  # 공 버그: nil
         if fun.value() == "잠시":        # pyright: ignore[reportAttributeAccessIssue]
             # 키워드 '잠시'(let) 처리 (잠시 ((name val) ...) body)
             if not isbinary(args):
@@ -396,17 +408,17 @@ def mk_eval(expr: Data, env: Data) -> Data:
                 if not car(abnd).issymbol():    # '잠시'의 한 바인딩의 이름이 symbol이 아닌 경우        # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
                     raise ErrType("잠시")
                 sym = car(abnd)             # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
-                val = mk_eval(car(cdr(abnd)), local_env)   # '잠시'의 한 바인딩의 값 계산(let*로 처리)  # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
+                val = do_eval(car(cdr(abnd)), local_env)   # '잠시'의 한 바인딩의 값 계산(let*로 처리)  # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
                 envset(local_env, sym, val)             # '잠시'의 한 바인딩을 환경 local_env에 추가
                 bnds = cdr(bnds)            # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
-            val = mk_eval(body, local_env)                 # '잠시'의 body 계산
+            val = do_eval(body, local_env)                 # '잠시'의 body 계산
             # env는 그대로이므로 local_env를 삭제하고 회복하는 과정이 필요 없음
             return val
 
     # builtin functions, lambda, and macro
 
     # Evaluate operator
-    fn = mk_eval(fun, env)     # eval the function part
+    fn = do_eval(fun, env)     # eval the function part
 
     if fn.ismacro():        # if the function is a macro
         mval = fn.val()             # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
@@ -415,13 +427,13 @@ def mk_eval(expr: Data, env: Data) -> Data:
         mbody = cdr(cdr(mval))      # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
         newfn = mkclosure(menv, mparams, mbody)
         expansion = apply(newfn, args)
-        return mk_eval(expansion, env)
+        return do_eval(expansion, env)
 
     # Evaluate arguments
     args = cplist(args)     # copy the argument list
     p = args
     while not p.isnil():
-        p.setcar(mk_eval(car(p), env))  # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
+        p.setcar(do_eval(car(p), env))  # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
         p = cdr(p)                      # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
     return apply(fn, args)
     # if not fun.issymbol():      
@@ -440,8 +452,10 @@ def isternary(args):
     return not args.isnil() and not cdr(args).isnil() and not cdr(cdr(args)).isnil() and cdr(cdr(cdr(args))).isnil()    # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
 
 def apply(fn: Data, args: Data) -> Data:
+    """함수 fn을 args에 적용한 결과를 반환함"""
+    result = nil       # default value of result
     if fn.isbuiltin():
-        return fn.fun()(args) # pyright: ignore[reportAttributeAccessIssue]
+        return fn.fun()(args)   # pyright: ignore[reportAttributeAccessIssue]
     if not fn.isclosure():
         raise ErrType("<#클로저>")
     env = mkenv(fn.env())       # pyright: ignore[reportAttributeAccessIssue] 
@@ -463,7 +477,7 @@ def apply(fn: Data, args: Data) -> Data:
     if not args.isnil():
         raise ErrArgs("<#클로저>")
     while not body.isnil():     # q_230102: 왜 body를 계속 계산하나? 수식 하나 아닌가?
-        result = mk_eval(car(body), env)        # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
+        result = do_eval(car(body), env)        # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
         body = cdr(body)                        # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
     return result
 
@@ -483,6 +497,7 @@ def _main_e():
     envset(env, mksym("<"), mkbuiltin(builtin_intlt))
     envset(env, mksym(">"), mkbuiltin(builtin_intgt))
     envset(env, mksym("부정"), mkbuiltin(builtin_not))
+    # envset(env, mksym("해"), mkbuiltin(builtin_do))
     envset(env, mksym("읽기"), mkbuiltin(builtin_read))
     envset(env, mksym("쓰기"), mkbuiltin(builtin_write))
     # envset(env, mksym("_새글"), mkbuiltin(builtin_gensym))
@@ -494,20 +509,12 @@ def _main_e():
             # print(f"BEFORE: {s}")
             tok = YY_reader.next_token()
             expr = read_expr()
-            val = mk_eval(expr, env)
+            val = do_eval(expr, env)
             if val != None:
                 print(val)
             # print(f"AFTER:  {YY_reader.remains()}")
         except ErrLisp as err:
             eprint(f"오류: {err}")
-    # while (s := input("> ")) != "":
-    #     try:
-    #         expr, s = read_expr(s)
-    #         val = eval(expr, env)
-    #         print(val)
-    #         #print(s)
-    #     except ErrLisp as err:
-    #         print(f"Error: {err}")
 
 if __name__ == "__main__":
     _main_e()
@@ -523,7 +530,7 @@ if __name__ == "__main__":
 내장 리터럴: 공(nil), #참(t)
 """
 
-"""TEST Session for Ch 12
+"""TEST Session for MACRO
 > (defmacro (ignore x) (cons 'quote (cons x nil)))
 ignore
 > (ignore foo)

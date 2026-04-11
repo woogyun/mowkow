@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Sequence, Iterable, NoReturn
 from _data import Data, nil, mksym, mkbuiltin
 from _parse import YY_reader, read_expr
 from _error import IsVerbose, eprint, ErrLisp
-from _eval import mkenv, envset, mk_eval, \
+from _eval import mkenv, envset, do_eval, \
         builtin_car, builtin_cdr, builtin_cons, \
         builtin_add, builtin_sub, builtin_mul, builtin_div, \
         builtin_inteq, builtin_intlt, builtin_intgt, \
@@ -139,7 +139,7 @@ def load_file(env: Data, path: str) -> None:
     while YY_reader.remains() != "":
         try:
             expr = read_expr()
-            result = mk_eval(expr, env)
+            result = do_eval(expr, env)
             if result is not None:
                 eprint(result)
         except ErrLisp as err:
@@ -162,7 +162,7 @@ def eval_print_loop(env: Data) -> None:
                 break
             _ = YY_reader.next_token()
             expr = read_expr()
-            val = mk_eval(expr, env)
+            val = do_eval(expr, env)
             if val != None:
                 print(val)
         except ErrLisp as err:

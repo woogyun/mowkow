@@ -33,10 +33,11 @@ class Data:
     """클래스 Data는 머꼬의 모든 데이터 클래스의 부모 클래스입니다."""
     def __init__(self):
         """Data 클래스는 추상 클래스이므로 비워 두었습니다."""
-        pass
     def ispair(self) -> bool:
+        """짝(pair)인지 점검하는 함수. 짝이면 참"""
         return False
     def isnil(self) -> bool:
+        """공(nil)인지 점검하는 함수. 공이면 참"""
         return False
     def issymbol(self) -> bool:
         return False
@@ -50,6 +51,15 @@ class Data:
         return False
     def ismacro(self) -> bool:
         return False
+    def value(self) -> None:
+        """ place holder for value """    
+        return None
+    def car(self) -> None:
+        """place holder for car"""
+        return None
+    def cdr(self) -> None:
+        """place holder for cdr"""
+        return None
 
 class Nil(Data):
     def __init__(self):
@@ -177,10 +187,10 @@ class Macro(Data):
 def cons(car_val: Data, cdr_val: Data) -> Data:
     return Pair(car_val, cdr_val)
 
-def car(p: Pair) -> Data:
+def car(p: Data) -> Data:
     return p.car()
 
-def cdr(p: Pair) -> Data:
+def cdr(p: Data) -> Data:
     return p.cdr()
 
 def mkint(ival: int) -> Data:
