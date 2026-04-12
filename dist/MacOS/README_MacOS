@@ -1,0 +1,17 @@
+----------------------
+README for MacOS Users
+----------------------
+
+                                                2026. 04. 13
+                                                우균(Gyun Woo)
+
+
+MacOS의 Gatekeeper 보안으로 인해 실행 문제가 발생하면
+터미널에서 mk 디렉토리로 이동한 다음 명령어를 입력한 후 실행하기 바랍니다.
+
+If the code is not executable due to the security problem issued by Gatekeeper,
+please apply the following command in your terminal where 'mk' is located.
+
+    % xattr -cr ./mk
+    % chmod 755 ./mk
+

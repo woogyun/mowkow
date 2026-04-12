@@ -7,7 +7,7 @@
 import os
 import sys
 import argparse
-from typing import Any, Dict, List, Optional, Sequence, Iterable, NoReturn
+from typing import Any, Optional, Iterable, NoReturn
 
 from _data import Data, nil, mksym, mkbuiltin
 from _parse import YY_reader, read_expr
