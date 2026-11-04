@@ -9,10 +9,10 @@ import sys
 import argparse
 from typing import Any, Optional, Iterable, NoReturn
 
-from _data import Data, nil, mksym, mkbuiltin
-from _parse import YY_reader, read_expr
-from _error import IsVerbose, eprint, ErrLisp
-from _eval import mkenv, envset, do_eval, \
+from ._data import Data, nil, mksym, mkbuiltin
+from ._parse import YY_reader, read_expr
+from ._error import IsVerbose, eprint, ErrLisp
+from ._eval import mkenv, envset, do_eval, \
         builtin_car, builtin_cdr, builtin_cons, \
         builtin_add, builtin_sub, builtin_mul, builtin_div, \
         builtin_inteq, builtin_intlt, builtin_intgt, \
@@ -123,7 +123,6 @@ def resource_path(relative_path):
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.dirname(os.path.abspath(__file__))
-
     return os.path.join(base_path, relative_path)
 
 def load_file(env: Data, path: str) -> None:
@@ -229,6 +228,7 @@ def main():
             print(arg.out_file)
 
     lib_file_path = resource_path("library_kor.scm")
+    # print(f"[머꼬] 라이브러리 경로: {lib_file_path}")
     load_file(env, lib_file_path)
 
     for file in arg.in_files:

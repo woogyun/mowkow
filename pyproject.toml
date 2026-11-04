@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Mowkow"
+version = "0.1.1"
+authors = [
+  { name = "Gyun Woo", email = "woogyun@pnu.edu" },
+]
+description = "Mowkow: A Korean LISP Interpreter"
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["Korean", "LISP", "coding", "programming", "interpreter"]
+dependencies = [
+]
+
+[project.scripts]
+mk = "mowkow.main:main"
+
+[tool.setuptools.package-data]
+"mowkow" = ["library_kor.scm"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
