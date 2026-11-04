@@ -4,24 +4,25 @@
 ## 설치 방법
 Python 3.10 이상을 설치한 후 PIP를 이용하여 다음 명령어를 수행합니다.
 ```
-pip install mowkow
+> pip install mowkow
 ```
 
-## 실행 방법
+PIP가 오래되었다면 다음 명령어로 업데이트할 수 있습니다.
+```
+> python -m pip install --upgrade pip
+```
+
+## 실행 방법(권장)
 PIP로 설치한 다음 터미널이나 명령 프롬프트(cmd)에서 다음 명령을 수행합니다.
 ```
-mk
+> mk
 ```
 
-GitHub 저장소를 다운로드한 경우, 
+## 실행 방법(대안)
+GitHub 저장소를 다운로드하여 풀어 수행할 수도 있습니다. 
 Python 3.10 이상을 설치한 후 GitHub 저장소 루트(README.md 파일이 있는 폴더) 다음 명령을 수행합니다.
 ```
-python mk.py
-```
-
-Windows 운영체제에서는 dist의 mk.exe를 다운로드하셔서 명령 프롬프트에서 다음과 같이 수행해도 됩니다.
-```
-mk.exe
+> python mk.py
 ```
 
 종료하려면 그냥 머꼬 프롬프트에서 그냥 엔터를 입력하면 됩니다.
@@ -78,9 +79,17 @@ mk.exe
 (쓰기 (최대공약수 가 나))
 (쓰기 (최소공배수 가 나))
 ```
+
+VisualStudio Code가 설치된 환경에서는 다음 명령어로 편집할 수 있습니다.
+```
+> code gcd_lcm.mk
+```
+저장할 때 VisualStudio Code의 인코딩이 UTF-8인지 확인하기 바랍니다. VisualStudio Code의 오른쪽 아래에서 상태 정보 행에서 확인할 수 있습니다.
+
+
 위 프로그램은 다음과 같이 수행할 수 있습니다.
 ```
-> python main.py gcd_lcm.mk
+> mk gcd_lcm.mk
 ```
 
 
@@ -89,29 +98,32 @@ mk.exe
 테스트 코드 폴더의 테스트 파일 source.mk를 수행하려면 다음과 같이 수행하시면 됩니다.
 
 ```
-python main.py test_code/source.mk
-```
-
-윈도우 실행 파일 mk.exe로 수행하시려면 다음과 같이 수행하시면 됩니다.
-```
-mk.exe test_code/source.mk
+> mk test_code/source.mk
 ```
 
 ## Windows용 배치 파일
 
 머꼬 프로그램 파일은 UTF-8 인코딩으로 작성해야 합니다.
-`test_code`의 예제 프로그램도 그렇게 작성된 것입니다.
+`test_code`의 예제 프로그램도 UTF-8 인코딩으로 작성된 것입니다.
 이를 Windows의 명령 프롬프트(`cmd`) 창에서 보려면 문자 인코딩을 UTF-8 인코딩으로 바꾸어야 합니다.
-이때 다음 명령어를 사용하실 수 있습니다.
-
+이때 wincmds 내의 배치 파일을 PATH 내의 폴더(예컨대 `C:\Windows`)에 추가해 주기 바랍니다. 그러면 다음 명령어를 사용하실 수 있습니다.
 ```
-gomk
+> gomk
 ```
 
 다시 원래 인코딩(code page 949, EUC-KR 호환)으로 명령 프롬프트를 회복하시려면 다음 명령어를 사용하시기 바랍니다.
-
 ```
-kmog
+> kmog
+```
+
+별도로 설치하는 것이 부담스럽다면 `cmd`에서 다음 명령어를 사용하시면 됩니다.
+UTF-8 인코딩으로 바꾸려면 코드 페이지 65001을 사용합니다.
+```
+> chcp 65001
+```
+한글 터미널로 복원하려면 코드 페이지 949로 바꾸시면 됩니다.
+```
+> chcp 949
 ```
 
 ## Authors
