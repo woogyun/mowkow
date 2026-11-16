@@ -10,8 +10,9 @@ import argparse
 from typing import Any, Optional, Iterable, NoReturn
 
 from ._data import Data, nil, mksym, mkbuiltin
-from ._parse import YY_reader, read_expr
+from ._parse import YY_reader, read_expr, slurp
 from ._error import IsVerbose, eprint, ErrLisp
+from _trans import transpile_source, TransUnsupported
 from ._eval import mkenv, envset, do_eval, \
         builtin_car, builtin_cdr, builtin_cons, \
         builtin_add, builtin_sub, builtin_mul, builtin_div, \
@@ -213,13 +214,38 @@ def main():
         prog='mk'
     )
 
-    argparser.add_argument('-o', '--output', 
+    argparser.add_argument('-o', '--output',
                            dest="out_file", type=str, help='출력 파일명')
+    argparser.add_argument("-py", "--python", dest="to_python",
+                           action="store_true", help="입력을 Python 코드로 번역")
     # argparser.add_argument("-v", "--verbose", help="상세 정보 출력")
     argparser.add_argument("in_files", nargs="*", help="소스 파일 목록")
     arg = argparser.parse_args()
     # if arg.verbose:
     #     IsVerbose = True
+
+    if arg.to_python:
+        for file in arg.in_files:
+            if not os.path.exists(file):
+                eprint(f"소스 파일 '{file}'를 찾을 수 없습니다.")
+                continue
+            out_path = os.path.splitext(file)[0] + ".py"
+            if os.path.exists(out_path):
+                eprint(f"출력 파일 '{out_path}'가 이미 존재합니다.")
+                continue
+            try:
+                code = transpile_source(slurp(file), os.path.basename(file))
+            except TransUnsupported as err:
+                loc = f":{err.line}" if err.line else ""
+                eprint(f"{os.path.basename(file)}{loc}: 번역 오류: {err}")
+                continue
+            except Exception as err:
+                eprint(f"{os.path.basename(file)}: 번역 중 오류가 발생했습니다: {err}")
+                continue
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(code)
+            print(out_path)
+        return
 
     if arg.out_file != None:
         if os.path.exists(arg.out_file):

@@ -55,7 +55,7 @@ class Reader:
         self._line = 1
         self._column = 0
         self._depth = 0
-        self._prompt1 = ">  "
+        self._prompt1 = ">> "
         self._prompt2 = ".. "
     def next_token(self) -> str:        # returns the token and set it to LA
         s = self._input
@@ -163,7 +163,15 @@ class Reader:
 
 YY_reader = Reader()   # The historical prefix "YY_" is attached to make it global
 
-def read_expr() -> Data:
+def _attach_line(data, line):
+    if data is not None and not data.isnil():
+        try:
+            data.line = line
+        except AttributeError:
+            pass
+    return data
+
+def _read_expr_inner() -> Data:     # renamed by 영훈
     if YY_reader.LA() == "(":
         data = read_list()
         return data
@@ -208,6 +216,11 @@ def read_expr() -> Data:
         return data
     # for test: return mkint(1910)
 
+def read_expr() -> Data:        # Python transcripter를 위한 정보 추가
+    line = YY_reader.line()
+    data = _read_expr_inner()
+    return _attach_line(data, line)
+
 def read_atom(s: str) -> Data:
     """read an integer, nil, or a string"""
     if s.isdigit() or (len(s) > 1 and (s[0] == '+' or s[0] == '-') and s[1:].isdigit()):
@@ -228,7 +241,7 @@ def read_atom(s: str) -> Data:
 
 def read_list() -> Data:
     """read a list except the leading '('"""
-    # YY_reader.match('(')          # 검사할 필요 없음
+    # YY_reader.match('(')      # 검사할 필요 없음
     YY_reader.nestin()
     YY_reader.next_token()
     result = nil
@@ -237,23 +250,34 @@ def read_list() -> Data:
         YY_reader.match(')')
         YY_reader.next_token()
         return result
-    fst = read_expr()  # retract tok and read an expression
+    fst = read_expr()           # retract tok and read an expression
     lst = cons(fst, nil)
     prev = lst
     while YY_reader.LA() != ')' and YY_reader.LA() != '.':
-        elem = read_expr()    # using the lookahead
+        elem = read_expr()      # using the lookahead
         last = cons(elem, nil)
         prev.setcdr(last)
         prev = last
     if YY_reader.LA() == '.':
-        YY_reader.match('.')    #s1 = s2 였었나? YY_reader 도입 전에는 match('.')
+        YY_reader.match('.')    # s1 = s2 였었나? YY_reader 도입 전에는 match('.')
         _ = YY_reader.next_token()
         elem = read_expr()
-        prev.setcdr(elem)   # last.setcdr(elem)와 같음. 이 시점에서는 assert(_ == ')')
+        prev.setcdr(elem)       # last.setcdr(elem)와 같음. 이 시점에서는 assert(_ == ')')
     YY_reader.nestout()
     YY_reader.match(')')
     YY_reader.next_token()
     return lst
+
+def parse_string(src: str) -> list:
+    """소스 문자열을 최상위 식(Data) 리스트로 파싱한다."""
+    YY_reader._input = src
+    YY_reader._depth = 0
+    YY_reader.resetpos()
+    exprs = []
+    YY_reader.next_token()
+    while YY_reader.LA() != "":
+        exprs.append(read_expr())
+    return exprs
 
 def _main_p():
     """test function for parsing"""
