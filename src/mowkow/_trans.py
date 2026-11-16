@@ -2,8 +2,8 @@
 """머꼬(.mk) 소스를 교육용으로 읽기 좋은 Python 코드로 번역하는 모듈."""
 
 import keyword
-from _data import Data
-from _parse import parse_string
+from ._data import Data
+from ._parse import parse_string
 
 PREC_LOWEST  = 0
 PREC_LAMBDA  = 1

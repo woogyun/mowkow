@@ -6,6 +6,10 @@ Python 3.10 이상을 설치한 후 PIP를 이용하여 다음 명령어를 수�
 ```
 > pip install mowkow
 ```
+혹시 Windows 등에서 보안 관련 경고가 나오면 다음 명령어를 수행합니다.
+```
+> python -m pip install mowkow
+```
 
 PIP가 오래되었다면 다음 명령어로 업데이트할 수 있습니다.
 ```

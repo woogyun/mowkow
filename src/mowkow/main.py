@@ -12,7 +12,7 @@ from typing import Any, Optional, Iterable, NoReturn
 from ._data import Data, nil, mksym, mkbuiltin
 from ._parse import YY_reader, read_expr, slurp
 from ._error import IsVerbose, eprint, ErrLisp
-from _trans import transpile_source, TransUnsupported
+from ._trans import transpile_source, TransUnsupported
 from ._eval import mkenv, envset, do_eval, \
         builtin_car, builtin_cdr, builtin_cons, \
         builtin_add, builtin_sub, builtin_mul, builtin_div, \
